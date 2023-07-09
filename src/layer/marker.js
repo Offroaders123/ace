@@ -1,12 +1,11 @@
-"use strict";
+import { Range } from "../range.js";
+import { createElement } from "../lib/dom.js";
 
-var Range = require("../range").Range;
-var dom = require("../lib/dom");
+export class Marker {
+    $padding = 0;
 
-
-class Marker {
     constructor(parentEl) {
-        this.element = dom.createElement("div");
+        this.element = createElement("div");
         this.element.className = "ace_layer ace_marker-layer";
         parentEl.appendChild(this.element);
     }
@@ -224,10 +223,6 @@ class Marker {
 
 }
 
-Marker.prototype.$padding = 0;
-
 function getBorderClass(tl, tr, br, bl) {
     return (tl ? 1 : 0) | (tr ? 2 : 0) | (br ? 4 : 0) | (bl ? 8 : 0);
 }
-
-exports.Marker = Marker;

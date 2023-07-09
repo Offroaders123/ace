@@ -1,32 +1,46 @@
-"use strict";
+import { implement } from "./lib/oop.js";
+import { importCssString, createElement, addCssClass, HI_DPI, setStyle as _setStyle, translate, removeCssClass, setCssClass } from "./lib/dom.js";
+import { delayedCall } from "./lib/lang.js";
+import { get as _get, set as _set, resetOptions, _signal, loadModule, defineOptions } from "./config.js";
+import { Gutter as GutterLayer } from "./layer/gutter.js";
+import { Marker as MarkerLayer } from "./layer/marker.js";
+import { Text as TextLayer } from "./layer/text.js";
+import { Cursor as CursorLayer } from "./layer/cursor.js";
+import { HScrollBar } from "./scrollbar.js";
+import { VScrollBar } from "./scrollbar.js";
+import { HScrollBar as HScrollBarCustom } from "./scrollbar_custom.js";
+import { VScrollBar as VScrollBarCustom } from "./scrollbar_custom.js";
+import { RenderLoop } from "./renderloop.js";
+import { FontMetrics } from "./layer/font_metrics.js";
+import { EventEmitter } from "./lib/event_emitter.js";
+import editorCss from "./css/editor-css.js";
+import { Decorator } from "./layer/decorators.js";
 
-var oop = require("./lib/oop");
-var dom = require("./lib/dom");
-var lang = require("./lib/lang");
-var config = require("./config");
-var GutterLayer = require("./layer/gutter").Gutter;
-var MarkerLayer = require("./layer/marker").Marker;
-var TextLayer = require("./layer/text").Text;
-var CursorLayer = require("./layer/cursor").Cursor;
-var HScrollBar = require("./scrollbar").HScrollBar;
-var VScrollBar = require("./scrollbar").VScrollBar;
-var HScrollBarCustom = require("./scrollbar_custom").HScrollBar;
-var VScrollBarCustom = require("./scrollbar_custom").VScrollBar;
-var RenderLoop = require("./renderloop").RenderLoop;
-var FontMetrics = require("./layer/font_metrics").FontMetrics;
-var EventEmitter = require("./lib/event_emitter").EventEmitter;
-var editorCss = require("./css/editor-css");
-var Decorator = require("./layer/decorators").Decorator;
+import { isIOS, isMobile, isIE } from "./lib/useragent.js";
 
-var useragent = require("./lib/useragent");
-
-dom.importCssString(editorCss, "ace_editor.css", false);
+importCssString(editorCss, "ace_editor.css", false);
 
 /**
  * The class that is responsible for drawing everything you see on the screen!
  * @related editor.renderer 
  **/
-class VirtualRenderer {
+export class VirtualRenderer {
+    CHANGE_CURSOR = 1;
+    CHANGE_MARKER = 2;
+    CHANGE_GUTTER = 4;
+    CHANGE_SCROLL = 8;
+    CHANGE_LINES = 16;
+    CHANGE_TEXT = 32;
+    CHANGE_SIZE = 64;
+    CHANGE_MARKER_BACK = 128;
+    CHANGE_MARKER_FRONT = 256;
+    CHANGE_FULL = 512;
+    CHANGE_H_SCROLL = 1024;
+    $changes = 0;
+    $padding = null;
+    $frozen = false;
+    STEPS = 8;
+
     /**
      * Constructs a new `VirtualRenderer` within the `container` specified, applying the given `theme`.
      * @param {Element} container The root element of the editor
@@ -35,26 +49,26 @@ class VirtualRenderer {
     constructor(container, theme) {
         var _self = this;
 
-        this.container = container || dom.createElement("div");
+        this.container = container || createElement("div");
 
-        dom.addCssClass(this.container, "ace_editor");
-        if (dom.HI_DPI) dom.addCssClass(this.container, "ace_hidpi");
+        addCssClass(this.container, "ace_editor");
+        if (HI_DPI) addCssClass(this.container, "ace_hidpi");
 
         this.setTheme(theme);
-        if (config.get("useStrictCSP") == null)
-            config.set("useStrictCSP", false);
+        if (_get("useStrictCSP") == null)
+            _set("useStrictCSP", false);
 
-        this.$gutter = dom.createElement("div");
+        this.$gutter = createElement("div");
         this.$gutter.className = "ace_gutter";
         this.container.appendChild(this.$gutter);
         this.$gutter.setAttribute("aria-hidden", true);
 
-        this.scroller = dom.createElement("div");
+        this.scroller = createElement("div");
         this.scroller.className = "ace_scroller";
 
         this.container.appendChild(this.scroller);
 
-        this.content = dom.createElement("div");
+        this.content = createElement("div");
         this.content.className = "ace_content";
         this.scroller.appendChild(this.content);
 
@@ -143,7 +157,7 @@ class VirtualRenderer {
             h: 0
         };
 
-        this.$keepTextAreaAtCursor = !useragent.isIOS;
+        this.$keepTextAreaAtCursor = !isIOS;
 
         this.$loop = new RenderLoop(
             this.$renderChanges.bind(this),
@@ -154,8 +168,8 @@ class VirtualRenderer {
         this.updateCharacterSize();
         this.setPadding(4);
         this.$addResizeObserver();
-        config.resetOptions(this);
-        config._signal("renderer", this);
+        resetOptions(this);
+        _signal("renderer", this);
     }
 
 
@@ -187,7 +201,7 @@ class VirtualRenderer {
         this.lineHeight = this.$textLayer.getLineHeight();
         this.$updatePrintMargin();
         // set explicit line height to avoid normal resolving to different values based on text
-        dom.setStyle(this.scroller.style, "line-height", this.lineHeight + "px");
+        _setStyle(this.scroller.style, "line-height", this.lineHeight + "px");
     }
 
     /**
@@ -380,15 +394,15 @@ class VirtualRenderer {
             
             this.gutterWidth = gutterWidth;
             
-            dom.setStyle(this.scrollBarH.element.style, "left", gutterWidth + "px");
-            dom.setStyle(this.scroller.style, "left", gutterWidth + this.margin.left + "px");
+            _setStyle(this.scrollBarH.element.style, "left", gutterWidth + "px");
+            _setStyle(this.scroller.style, "left", gutterWidth + this.margin.left + "px");
             size.scrollerWidth = Math.max(0, width - gutterWidth - this.scrollBarV.getWidth() - this.margin.h);
-            dom.setStyle(this.$gutter.style, "left", this.margin.left + "px");
+            _setStyle(this.$gutter.style, "left", this.margin.left + "px");
             
             var right = this.scrollBarV.getWidth() + "px";
-            dom.setStyle(this.scrollBarH.element.style, "right", right);
-            dom.setStyle(this.scroller.style, "right", right);
-            dom.setStyle(this.scroller.style, "bottom", this.scrollBarH.getHeight());
+            _setStyle(this.scrollBarH.element.style, "right", right);
+            _setStyle(this.scroller.style, "right", right);
+            _setStyle(this.scroller.style, "bottom", this.scrollBarH.getHeight());
                 
             this.scrollBarH.setWidth(size.scrollerWidth);
 
@@ -549,9 +563,9 @@ class VirtualRenderer {
             return;
 
         if (!this.$printMarginEl) {
-            var containerEl = dom.createElement("div");
+            var containerEl = createElement("div");
             containerEl.className = "ace_layer ace_print-margin-layer";
-            this.$printMarginEl = dom.createElement("div");
+            this.$printMarginEl = createElement("div");
             this.$printMarginEl.className = "ace_print-margin";
             containerEl.appendChild(this.$printMarginEl);
             this.content.insertBefore(containerEl, this.content.firstChild);
@@ -599,7 +613,7 @@ class VirtualRenderer {
         var style = this.textarea.style;
         var composition = this.$composition;
         if (!this.$keepTextAreaAtCursor && !composition) {
-            dom.translate(this.textarea, -100, 0);
+            translate(this.textarea, -100, 0);
             return;
         }
         var pixelPos = this.$cursorLayer.$pixelPos;
@@ -613,9 +627,9 @@ class VirtualRenderer {
         var posLeft = pixelPos.left;
         posTop -= config.offset;
 
-        var h = composition && composition.useTextareaForIME || useragent.isMobile ? this.lineHeight : 1;
+        var h = composition && composition.useTextareaForIME || isMobile ? this.lineHeight : 1;
         if (posTop < 0 || posTop > config.height - h) {
-            dom.translate(this.textarea, 0, 0);
+            translate(this.textarea, 0, 0);
             return;
         }
 
@@ -640,9 +654,9 @@ class VirtualRenderer {
 
         posLeft += this.gutterWidth + this.margin.left;
 
-        dom.setStyle(style, "height", h + "px");
-        dom.setStyle(style, "width", w + "px");
-        dom.translate(this.textarea, Math.min(posLeft, this.$size.scrollerWidth - w), Math.min(posTop, maxTop));
+        _setStyle(style, "height", h + "px");
+        _setStyle(style, "width", w + "px");
+        translate(this.textarea, Math.min(posLeft, this.$size.scrollerWidth - w), Math.min(posTop, maxTop));
     }
 
     /**
@@ -835,18 +849,18 @@ class VirtualRenderer {
             if (changes & this.CHANGE_H_SCROLL)
                 this.$updateScrollBarH();
             
-            dom.translate(this.content, -this.scrollLeft, -config.offset);
+            translate(this.content, -this.scrollLeft, -config.offset);
             
             var width = config.width + 2 * this.$padding + "px";
             var height = config.minHeight + "px";
             
-            dom.setStyle(this.content.style, "width", width);
-            dom.setStyle(this.content.style, "height", height);
+            _setStyle(this.content.style, "width", width);
+            _setStyle(this.content.style, "height", height);
         }
         
         // horizontal scrolling
         if (changes & this.CHANGE_H_SCROLL) {
-            dom.translate(this.content, -this.scrollLeft, -config.offset);
+            translate(this.content, -this.scrollLeft, -config.offset);
             this.scroller.className = this.scrollLeft <= 0 ? "ace_scroller " : "ace_scroller ace_scroll-left ";
             if (this.enableKeyboardAccessibility)
                 this.scroller.className += this.keyboardFocusClassName;
@@ -1532,7 +1546,7 @@ class VirtualRenderer {
      * Focuses the current container.
      **/
     visualizeFocus() {
-        dom.addCssClass(this.container, "ace_focus");
+        addCssClass(this.container, "ace_focus");
     }
 
     /**
@@ -1540,7 +1554,7 @@ class VirtualRenderer {
      * Blurs the current container.
      **/
     visualizeBlur() {
-        dom.removeCssClass(this.container, "ace_focus");
+        removeCssClass(this.container, "ace_focus");
     }
 
     /**
@@ -1557,7 +1571,7 @@ class VirtualRenderer {
             composition.useTextareaForIME = this.$useTextareaForIME;
         
         if (this.$useTextareaForIME) {
-            dom.addCssClass(this.textarea, "ace_composition");
+            addCssClass(this.textarea, "ace_composition");
             this.textarea.style.cssText = "";
             this.$moveTextAreaToCursor();
             this.$cursorLayer.element.style.display = "none";
@@ -1589,7 +1603,7 @@ class VirtualRenderer {
         if (this.$composition.markerId)
             this.session.removeMarker(this.$composition.markerId);
 
-        dom.removeCssClass(this.textarea, "ace_composition");
+        removeCssClass(this.textarea, "ace_composition");
         this.textarea.style.cssText = this.$composition.cssText;
         var cursor = this.session.selection.cursor;
         this.removeExtraToken(cursor.row, cursor.column);
@@ -1679,7 +1693,7 @@ class VirtualRenderer {
 
         if (!theme || typeof theme == "string") {
             var moduleName = theme || this.$options.theme.initialValue;
-            config.loadModule(["theme", moduleName], afterLoad);
+            loadModule(["theme", moduleName], afterLoad);
         } else {
             afterLoad(theme);
         }
@@ -1691,14 +1705,14 @@ class VirtualRenderer {
                 throw new Error("couldn't load module " + theme + " or it didn't call define");
             if (module.$id)
                 _self.$themeId = module.$id;
-            dom.importCssString(
+            importCssString(
                 module.cssText,
                 module.cssClass,
                 _self.container
             );
 
             if (_self.theme)
-                dom.removeCssClass(_self.container, _self.theme.cssClass);
+                removeCssClass(_self.container, _self.theme.cssClass);
 
             var padding = "padding" in module ? module.padding 
                 : "padding" in (_self.theme || {}) ? 4 : _self.$padding;
@@ -1709,8 +1723,8 @@ class VirtualRenderer {
             _self.$theme = module.cssClass;
 
             _self.theme = module;
-            dom.addCssClass(_self.container, module.cssClass);
-            dom.setCssClass(_self.container, "ace_dark", module.isDark);
+            addCssClass(_self.container, module.cssClass);
+            setCssClass(_self.container, "ace_dark", module.isDark);
 
             // force re-measure of the gutter width
             if (_self.$size) {
@@ -1741,7 +1755,7 @@ class VirtualRenderer {
      *
      **/
     setStyle(style, include) {
-        dom.setCssClass(this.container, style, include !== false);
+        setCssClass(this.container, style, include !== false);
     }
 
     /**
@@ -1750,11 +1764,11 @@ class VirtualRenderer {
      *
      **/
     unsetStyle(style) {
-        dom.removeCssClass(this.container, style);
+        removeCssClass(this.container, style);
     }
     
     setCursorStyle(style) {
-        dom.setStyle(this.scroller.style, "cursor", style);
+        _setStyle(this.scroller.style, "cursor", style);
     }
 
     /**
@@ -1762,11 +1776,11 @@ class VirtualRenderer {
      *
      **/
     setMouseCursor(cursorStyle) {
-        dom.setStyle(this.scroller.style, "cursor", cursorStyle);
+        _setStyle(this.scroller.style, "cursor", cursorStyle);
     }
     
     attachToShadowRoot() {
-        dom.importCssString(editorCss, "ace_editor.css", this.container);
+        importCssString(editorCss, "ace_editor.css", this.container);
     }
 
     /**
@@ -1819,7 +1833,7 @@ class VirtualRenderer {
     $addResizeObserver() {
         if (!window.ResizeObserver || this.$resizeObserver) return;
         var self = this;
-        this.$resizeTimer = lang.delayedCall(function() {
+        this.$resizeTimer = delayedCall(function() {
             if (!self.destroyed)  self.onResize();
         }, 50);
         this.$resizeObserver = new window.ResizeObserver(function(e) {
@@ -1839,25 +1853,9 @@ class VirtualRenderer {
 
 }
 
-VirtualRenderer.prototype.CHANGE_CURSOR = 1;
-VirtualRenderer.prototype.CHANGE_MARKER = 2;
-VirtualRenderer.prototype.CHANGE_GUTTER = 4;
-VirtualRenderer.prototype.CHANGE_SCROLL = 8;
-VirtualRenderer.prototype.CHANGE_LINES = 16;
-VirtualRenderer.prototype.CHANGE_TEXT = 32;
-VirtualRenderer.prototype.CHANGE_SIZE = 64;
-VirtualRenderer.prototype.CHANGE_MARKER_BACK = 128;
-VirtualRenderer.prototype.CHANGE_MARKER_FRONT = 256;
-VirtualRenderer.prototype.CHANGE_FULL = 512;
-VirtualRenderer.prototype.CHANGE_H_SCROLL = 1024;
-VirtualRenderer.prototype.$changes = 0;
-VirtualRenderer.prototype.$padding = null;
-VirtualRenderer.prototype.$frozen = false;
-VirtualRenderer.prototype.STEPS = 8;
+implement(VirtualRenderer.prototype, EventEmitter);
 
-oop.implement(VirtualRenderer.prototype, EventEmitter);
-
-config.defineOptions(VirtualRenderer.prototype, "renderer", {
+defineOptions(VirtualRenderer.prototype, "renderer", {
     useResizeObserver: {
         set: function(value) {
             if (!value && this.$resizeObserver) {
@@ -1918,7 +1916,7 @@ config.defineOptions(VirtualRenderer.prototype, "renderer", {
     },
     fadeFoldWidgets: {
         set: function(show) {
-            dom.setCssClass(this.$gutter, "ace_fade-fold-widgets", show);
+            setCssClass(this.$gutter, "ace_fade-fold-widgets", show);
         },
         initialValue: false
     },
@@ -2033,8 +2031,6 @@ config.defineOptions(VirtualRenderer.prototype, "renderer", {
     hasCssTransforms: {
     },
     useTextareaForIME: {
-        initialValue: !useragent.isMobile && !useragent.isIE
+        initialValue: !isMobile && !isIE
     }
 });
-
-exports.VirtualRenderer = VirtualRenderer;

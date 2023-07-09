@@ -1,18 +1,17 @@
-"use strict";
-
-var dom = require("../lib/dom");
-var event = require("../lib/event");
-var useragent = require("../lib/useragent");
+import { createElement } from "../lib/dom.js";
+import { preventDefault, addListener, removeListener } from "../lib/event.js";
+import { isMac, isWin, isIE, isWebKit } from "../lib/useragent.js";
 
 var AUTOSCROLL_DELAY = 200;
 var SCROLL_CURSOR_DELAY = 200;
 var SCROLL_CURSOR_HYSTERESIS = 5;
 
-function DragdropHandler(mouseHandler) {
+export class DragdropHandler {
+    constructor(mouseHandler) {
 
     var editor = mouseHandler.editor;
 
-    var dragImage = dom.createElement("div");
+    var dragImage = createElement("div");
     dragImage.style.cssText = "top:-100px;position:absolute;z-index:2147483647;opacity:0.5";
     dragImage.textContent = "\xa0";
 
@@ -86,7 +85,7 @@ function DragdropHandler(mouseHandler) {
         counter++;
         // dataTransfer object does not save dropEffect across events on IE, so we store it in dragOperation
         e.dataTransfer.dropEffect = dragOperation = getDropEffect(e);
-        return event.preventDefault(e);
+        return preventDefault(e);
     };
 
     this.onDragOver = function(e) {
@@ -103,7 +102,7 @@ function DragdropHandler(mouseHandler) {
             onMouseMoveTimer = null;
 
         e.dataTransfer.dropEffect = dragOperation = getDropEffect(e);
-        return event.preventDefault(e);
+        return preventDefault(e);
     };
 
     this.onDragLeave = function(e) {
@@ -111,7 +110,7 @@ function DragdropHandler(mouseHandler) {
         if (counter <= 0 && dragSelectionMarker) {
             clearDragMarker();
             dragOperation = null;
-            return event.preventDefault(e);
+            return preventDefault(e);
         }
     };
 
@@ -148,15 +147,15 @@ function DragdropHandler(mouseHandler) {
             dragOperation = null;
         }
         clearDragMarker();
-        return event.preventDefault(e);
+        return preventDefault(e);
     };
 
-    event.addListener(mouseTarget, "dragstart", this.onDragStart.bind(mouseHandler), editor);
-    event.addListener(mouseTarget, "dragend", this.onDragEnd.bind(mouseHandler), editor);
-    event.addListener(mouseTarget, "dragenter", this.onDragEnter.bind(mouseHandler), editor);
-    event.addListener(mouseTarget, "dragover", this.onDragOver.bind(mouseHandler), editor);
-    event.addListener(mouseTarget, "dragleave", this.onDragLeave.bind(mouseHandler), editor);
-    event.addListener(mouseTarget, "drop", this.onDrop.bind(mouseHandler), editor);
+    addListener(mouseTarget, "dragstart", this.onDragStart.bind(mouseHandler), editor);
+    addListener(mouseTarget, "dragend", this.onDragEnd.bind(mouseHandler), editor);
+    addListener(mouseTarget, "dragenter", this.onDragEnter.bind(mouseHandler), editor);
+    addListener(mouseTarget, "dragover", this.onDragOver.bind(mouseHandler), editor);
+    addListener(mouseTarget, "dragleave", this.onDragLeave.bind(mouseHandler), editor);
+    addListener(mouseTarget, "drop", this.onDrop.bind(mouseHandler), editor);
 
     function scrollCursorIntoView(cursor, prevCursor) {
         var now = Date.now();
@@ -231,7 +230,7 @@ function DragdropHandler(mouseHandler) {
         onDragInterval();
         timerId = setInterval(onDragInterval, 20);
         counter = 0;
-        event.addListener(document, "mousemove", onMouseMove);
+        addListener(document, "mousemove", onMouseMove);
     }
 
     function clearDragMarker() {
@@ -246,7 +245,7 @@ function DragdropHandler(mouseHandler) {
         counter = 0;
         autoScrollStartTime = null;
         cursorMovedTime = null;
-        event.removeListener(document, "mousemove", onMouseMove);
+        removeListener(document, "mousemove", onMouseMove);
     }
 
     // sometimes other code on the page can stop dragleave event leaving editor stuck in the drag state
@@ -271,7 +270,7 @@ function DragdropHandler(mouseHandler) {
         var copyAllowed = ['copy', 'copymove', 'all', 'uninitialized'];
         var moveAllowed = ['move', 'copymove', 'linkmove', 'all', 'uninitialized'];
 
-        var copyModifierState = useragent.isMac ? e.altKey : e.ctrlKey;
+        var copyModifierState = isMac ? e.altKey : e.ctrlKey;
 
         // IE throws error while dragging from another app
         var effectAllowed = "uninitialized";
@@ -289,6 +288,7 @@ function DragdropHandler(mouseHandler) {
 
         return dropEffect;
     }
+}
 }
 
 (function() {
@@ -320,14 +320,14 @@ function DragdropHandler(mouseHandler) {
         target.draggable = true;
         editor.renderer.$cursorLayer.setBlinking(false);
         editor.setStyle("ace_dragging");
-        var cursorStyle = useragent.isWin ? "default" : "move";
+        var cursorStyle = isWin ? "default" : "move";
         editor.renderer.setCursorStyle(cursorStyle);
         this.setState("dragReady");
     };
 
     this.onMouseDrag = function(e) {
         var target = this.editor.container;
-        if (useragent.isIE && this.state == "dragReady") {
+        if (isIE && this.state == "dragReady") {
             // IE does not handle [draggable] attribute set after mousedown
             var distance = calcDistance(this.mousedownEvent.x, this.mousedownEvent.y, this.x, this.y);
             if (distance > 3)
@@ -360,7 +360,7 @@ function DragdropHandler(mouseHandler) {
                 eventTarget.unselectable = "on";
             if (editor.getDragDelay()) {
                 // https://code.google.com/p/chromium/issues/detail?id=286700
-                if (useragent.isWebKit) {
+                if (isWebKit) {
                     this.cancelDrag = true;
                     var mouseTarget = editor.container;
                     mouseTarget.draggable = true;
@@ -381,5 +381,3 @@ function DragdropHandler(mouseHandler) {
 function calcDistance(ax, ay, bx, by) {
     return Math.sqrt(Math.pow(bx - ax, 2) + Math.pow(by - ay, 2));
 }
-
-exports.DragdropHandler = DragdropHandler;

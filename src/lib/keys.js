@@ -31,9 +31,7 @@ For more information about SproutCore, visit http://www.sproutcore.com
 
 // Most of the following code is taken from SproutCore with a few changes.
 
-"use strict";
-
-var oop = require("./oop");
+import { mixin } from "./oop.js";
 
 /*
  * Helper functions and hashes for key handling.
@@ -126,9 +124,9 @@ var Keys = (function() {
 
     // Add the MODIFIER_KEYS, FUNCTION_KEYS and PRINTABLE_KEYS to the KEY
     // variables as well.
-    oop.mixin(ret, ret.MODIFIER_KEYS);
-    oop.mixin(ret, ret.PRINTABLE_KEYS);
-    oop.mixin(ret, ret.FUNCTION_KEYS);
+    mixin(ret, ret.MODIFIER_KEYS);
+    mixin(ret, ret.PRINTABLE_KEYS);
+    mixin(ret, ret.FUNCTION_KEYS);
 
     // aliases
     ret.enter = ret["return"];
@@ -149,11 +147,12 @@ var Keys = (function() {
 
     return ret;
 })();
-oop.mixin(exports, Keys);
+mixin(_default, Keys);
 
-exports.default = exports;
+import * as _default from "./keys.js";
+export { _default as default };
 
-exports.keyCodeToString = function(keyCode) {
+export function keyCodeToString(keyCode) {
     // Language-switching keystroke in Chrome/Linux emits keyCode 0.
     var keyString = Keys[keyCode];
     if (typeof keyString != "string")

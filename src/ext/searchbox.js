@@ -1,21 +1,19 @@
-"use strict";
-
-var dom = require("../lib/dom");
-var lang = require("../lib/lang");
-var event = require("../lib/event");
-var searchboxCss = require("./searchbox-css");
-var HashHandler = require("../keyboard/hash_handler").HashHandler;
-var keyUtil = require("../lib/keys");
-var nls = require("../config").nls;
+import { importCssString, createElement, buildDom, setCssClass } from "../lib/dom.js";
+import { delayedCall } from "../lib/lang.js";
+import { addListener, stopPropagation, addCommandKeyListener, stopEvent } from "../lib/event.js";
+import searchboxCss from "./searchbox-css.js";
+import { HashHandler } from "../keyboard/hash_handler.js";
+import { keyCodeToString } from "../lib/keys.js";
+import { nls } from "../config.js";
 
 var MAX_COUNT = 999;
 
-dom.importCssString(searchboxCss, "ace_searchbox", false);
+importCssString(searchboxCss, "ace_searchbox", false);
 
-class SearchBox {
+export class SearchBox {
     constructor(editor, range, showReplaceForm) {
-        var div = dom.createElement("div");
-        dom.buildDom(["div", {class:"ace_search right"},
+        var div = createElement("div");
+        buildDom(["div", {class:"ace_search right"},
             ["span", {action: "hide", class: "ace_searchbtn_close"}],
             ["div", {class: "ace_search_form"},
                 ["input", {class: "ace_search_field", placeholder: nls("Search for"), spellcheck: "false"}],
@@ -44,7 +42,7 @@ class SearchBox {
 
         this.$init();
         this.setEditor(editor);
-        dom.importCssString(searchboxCss, "ace_searchbox", editor.container);
+        importCssString(searchboxCss, "ace_searchbox", editor.container);
     }
     
     setEditor(editor) {
@@ -77,43 +75,43 @@ class SearchBox {
         this.$initElements(sb);
         
         var _this = this;
-        event.addListener(sb, "mousedown", function(e) {
+        addListener(sb, "mousedown", function(e) {
             setTimeout(function(){
                 _this.activeInput.focus();
             }, 0);
-            event.stopPropagation(e);
+            stopPropagation(e);
         });
-        event.addListener(sb, "click", function(e) {
+        addListener(sb, "click", function(e) {
             var t = e.target || e.srcElement;
             var action = t.getAttribute("action");
             if (action && _this[action])
                 _this[action]();
             else if (_this.$searchBarKb.commands[action])
                 _this.$searchBarKb.commands[action].exec(_this);
-            event.stopPropagation(e);
+            stopPropagation(e);
         });
 
-        event.addCommandKeyListener(sb, function(e, hashId, keyCode) {
-            var keyString = keyUtil.keyCodeToString(keyCode);
+        addCommandKeyListener(sb, function(e, hashId, keyCode) {
+            var keyString = keyCodeToString(keyCode);
             var command = _this.$searchBarKb.findKeyCommand(hashId, keyString);
             if (command && command.exec) {
                 command.exec(_this);
-                event.stopEvent(e);
+                stopEvent(e);
             }
         });
 
-        this.$onChange = lang.delayedCall(function() {
+        this.$onChange = delayedCall(function() {
             _this.find(false, false);
         });
 
-        event.addListener(this.searchInput, "input", function() {
+        addListener(this.searchInput, "input", function() {
             _this.$onChange.schedule(20);
         });
-        event.addListener(this.searchInput, "focus", function() {
+        addListener(this.searchInput, "focus", function() {
             _this.activeInput = _this.searchInput;
             _this.searchInput.value && _this.highlight();
         });
-        event.addListener(this.replaceInput, "focus", function() {
+        addListener(this.replaceInput, "focus", function() {
             _this.activeInput = _this.replaceInput;
             _this.searchInput.value && _this.highlight();
         });
@@ -130,12 +128,12 @@ class SearchBox {
     }
 
     $syncOptions(preventScroll) {
-        dom.setCssClass(this.replaceOption, "checked", this.searchRange);
-        dom.setCssClass(this.searchOption, "checked", this.searchOption.checked);
+        setCssClass(this.replaceOption, "checked", this.searchRange);
+        setCssClass(this.searchOption, "checked", this.searchOption.checked);
         this.replaceOption.textContent = this.replaceOption.checked ? "-" : "+";
-        dom.setCssClass(this.regExpOption, "checked", this.regExpOption.checked);
-        dom.setCssClass(this.wholeWordOption, "checked", this.wholeWordOption.checked);
-        dom.setCssClass(this.caseSensitiveOption, "checked", this.caseSensitiveOption.checked);
+        setCssClass(this.regExpOption, "checked", this.regExpOption.checked);
+        setCssClass(this.wholeWordOption, "checked", this.wholeWordOption.checked);
+        setCssClass(this.caseSensitiveOption, "checked", this.caseSensitiveOption.checked);
         var readOnly = this.editor.getReadOnly();
         this.replaceOption.style.display = readOnly ? "none" : "";
         this.replaceBox.style.display = this.replaceOption.checked && !readOnly ? "" : "none";
@@ -159,7 +157,7 @@ class SearchBox {
             range: this.searchRange
         });
         var noMatch = !range && this.searchInput.value;
-        dom.setCssClass(this.searchBox, "ace_nomatch", noMatch);
+        setCssClass(this.searchBox, "ace_nomatch", noMatch);
         this.editor._emit("findSearchBox", { match: !noMatch });
         this.highlight();
         this.updateCounter();
@@ -209,7 +207,7 @@ class SearchBox {
             wholeWord: this.wholeWordOption.checked
         });
         var noMatch = !range && this.searchInput.value;
-        dom.setCssClass(this.searchBox, "ace_nomatch", noMatch);
+        setCssClass(this.searchBox, "ace_nomatch", noMatch);
         this.editor._emit("findSearchBox", { match: !noMatch });
         this.highlight();
         this.hide();
@@ -355,9 +353,7 @@ var $closeSearchBarKb = new HashHandler([{
 SearchBox.prototype.$searchBarKb = $searchBarKb;
 SearchBox.prototype.$closeSearchBarKb = $closeSearchBarKb;
 
-exports.SearchBox = SearchBox;
-
-exports.Search = function(editor, isReplace) {
+export function Search(editor, isReplace) {
     var sb = editor.searchBox || new SearchBox(editor);
     sb.show(editor.session.getTextRange(), isReplace);
 };

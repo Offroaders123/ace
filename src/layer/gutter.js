@@ -1,15 +1,19 @@
-"use strict";
+import { createElement, setStyle, addCssClass, removeCssClass, computedStyle } from "../lib/dom.js";
+import { implement } from "../lib/oop.js";
+import { escapeHTML } from "../lib/lang.js";
+import { EventEmitter } from "../lib/event_emitter.js";
+import { Lines } from "./lines.js";
+import { nls } from "../config.js";
 
-var dom = require("../lib/dom");
-var oop = require("../lib/oop");
-var lang = require("../lib/lang");
-var EventEmitter = require("../lib/event_emitter").EventEmitter;
-var Lines = require("./lines").Lines;
-var nls = require("../config").nls;
+export class Gutter {
+    $fixedWidth = false;
+    $highlightGutterLine = true;
+    $renderer = "";
+    $showLineNumbers = true;
+    $showFoldWidgets = true;
 
-class Gutter{
     constructor(parentEl) {
-        this.element = dom.createElement("div");
+        this.element = createElement("div");
         this.element.className = "ace_layer ace_gutter-layer";
         parentEl.appendChild(this.element);
         this.setShowFoldWidgets(this.$showFoldWidgets);
@@ -55,7 +59,7 @@ class Gutter{
            
             var annoText = annotation.text;
             var annoType = annotation.type;
-            annoText = annoText ? lang.escapeHTML(annoText) : annotation.html || "";
+            annoText = annoText ? escapeHTML(annoText) : annotation.html || "";
 
             if (rowInfo.text.indexOf(annoText) === -1){
                 rowInfo.text.push(annoText);
@@ -355,8 +359,8 @@ class Gutter{
             if (foldWidget.className != foldClass)
                 foldWidget.className = foldClass;
 
-            dom.setStyle(foldWidget.style, "height", lineHeight);
-            dom.setStyle(foldWidget.style, "display", "inline-block");
+            setStyle(foldWidget.style, "height", lineHeight);
+            setStyle(foldWidget.style, "display", "inline-block");
             
             // Set a11y properties.
             foldWidget.setAttribute("role", "button");
@@ -383,7 +387,7 @@ class Gutter{
             }
         } else {
             if (foldWidget) {
-                dom.setStyle(foldWidget.style, "display", "none");
+                setStyle(foldWidget.style, "display", "none");
                 foldWidget.setAttribute("tabindex", "0");
                 foldWidget.removeAttribute("role");
                 foldWidget.removeAttribute("aria-label");
@@ -395,9 +399,9 @@ class Gutter{
             annotationIconNode.className = iconClassName;
             annotationIconNode.className += foldAnnotationClass;
 
-            dom.setStyle(annotationIconNode.style, "height", lineHeight);
-            dom.setStyle(annotationNode.style, "display", "block");
-            dom.setStyle(annotationNode.style, "height", lineHeight);
+            setStyle(annotationIconNode.style, "height", lineHeight);
+            setStyle(annotationNode.style, "display", "block");
+            setStyle(annotationNode.style, "height", lineHeight);
             annotationNode.setAttribute("aria-label", nls("Read annotations row $0", [rowText]));
             annotationNode.setAttribute("tabindex", "-1");
             annotationNode.setAttribute("role", "button");
@@ -411,15 +415,15 @@ class Gutter{
             else 
                 element.classList.add(this.$annotations[row].className.replace(" ", ""));
 
-            dom.setStyle(annotationIconNode.style, "height", lineHeight);
-            dom.setStyle(annotationNode.style, "display", "block");
-            dom.setStyle(annotationNode.style, "height", lineHeight);
+            setStyle(annotationIconNode.style, "height", lineHeight);
+            setStyle(annotationNode.style, "display", "block");
+            setStyle(annotationNode.style, "height", lineHeight);
             annotationNode.setAttribute("aria-label", nls("Read annotations row $0", [rowText]));
             annotationNode.setAttribute("tabindex", "-1");
             annotationNode.setAttribute("role", "button");
         }
         else {
-            dom.setStyle(annotationNode.style, "display", "none");
+            setStyle(annotationNode.style, "display", "none");
             annotationNode.removeAttribute("aria-label");
             annotationNode.removeAttribute("role");
             annotationNode.setAttribute("tabindex", "0");
@@ -430,8 +434,8 @@ class Gutter{
 
         if (element.className != className)
             element.className = className;
-        dom.setStyle(cell.element.style, "height", this.$lines.computeLineHeight(row, config, session) + "px");
-        dom.setStyle(cell.element.style, "top", this.$lines.computeLineTop(row, config, session) + "px");
+        setStyle(cell.element.style, "height", this.$lines.computeLineHeight(row, config, session) + "px");
+        setStyle(cell.element.style, "top", this.$lines.computeLineTop(row, config, session) + "px");
         
         cell.text = rowText;
 
@@ -461,9 +465,9 @@ class Gutter{
     
     setShowFoldWidgets(show) {
         if (show)
-            dom.addCssClass(this.element, "ace_folding-enabled");
+            addCssClass(this.element, "ace_folding-enabled");
         else
-            dom.removeCssClass(this.element, "ace_folding-enabled");
+            removeCssClass(this.element, "ace_folding-enabled");
 
         this.$showFoldWidgets = show;
         this.$padding = null;
@@ -476,7 +480,7 @@ class Gutter{
     $computePadding() {
         if (!this.element.firstChild)
             return {left: 0, right: 0};
-        var style = dom.computedStyle(this.element.firstChild);
+        var style = computedStyle(this.element.firstChild);
         this.$padding = {};
         this.$padding.left = (parseInt(style.borderLeftWidth) || 0)
             + (parseInt(style.paddingLeft) || 0) + 1;
@@ -496,28 +500,20 @@ class Gutter{
 
 }
 
-Gutter.prototype.$fixedWidth = false;
-Gutter.prototype.$highlightGutterLine = true;
-Gutter.prototype.$renderer = "";
-Gutter.prototype.$showLineNumbers = true;
-Gutter.prototype.$showFoldWidgets = true;
-
-oop.implement(Gutter.prototype, EventEmitter);
+implement(Gutter.prototype, EventEmitter);
 
 function onCreateCell(element) {
     var textNode = document.createTextNode('');
     element.appendChild(textNode);
     
-    var foldWidget = dom.createElement("span");
+    var foldWidget = createElement("span");
     element.appendChild(foldWidget);
 
-    var annotationNode = dom.createElement("span");
+    var annotationNode = createElement("span");
     element.appendChild(annotationNode);
 
-    var annotationIconNode = dom.createElement("span");
+    var annotationIconNode = createElement("span");
     annotationNode.appendChild(annotationIconNode);
     
     return element;
 }
-
-exports.Gutter = Gutter;

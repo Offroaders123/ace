@@ -1,10 +1,9 @@
-"use strict";
+import { addListener, capture } from "../lib/event.js";
+import { isOldIE } from "../lib/useragent.js";
+import * as ace from "../ace.js";
+import { edit } from "../ace.js";
 
-var event = require("../lib/event");
-var UA = require("../lib/useragent");
-var ace = require("../ace");
-
-module.exports = exports = ace;
+export * from "../ace.js";
 
 /*
  * Returns the CSS property of element.
@@ -91,7 +90,7 @@ function setupContainer(element, getValue) {
         style += 'display:inline-block;';
         container.setAttribute('style', style);
     };
-    event.addListener(window, 'resize', resizeEvent);
+    addListener(window, 'resize', resizeEvent);
 
     // Call the resizeEvent once, so that the size of the container is
     // calculated.
@@ -121,7 +120,7 @@ function setupContainer(element, getValue) {
     return container;
 }
 
-exports.transformTextarea = function(element, options) {
+export function transformTextarea(element, options) {
     var isFocused = element.autofocus || document.activeElement == element;
     var session;
     var container = setupContainer(element, function() {
@@ -170,7 +169,7 @@ exports.transformTextarea = function(element, options) {
         fontSize: "14px",
         boxShadow: "-5px 2px 3px gray"
     };
-    if (!UA.isOldIE) {
+    if (!isOldIE) {
         settingDivStyles.backgroundColor = "rgba(0, 0, 0, 0.6)";
     } else {
         settingDivStyles.backgroundColor = "#333";
@@ -179,9 +178,9 @@ exports.transformTextarea = function(element, options) {
     applyStyles(settingDiv, settingDivStyles);
     container.appendChild(settingDiv);
 
-    options = options || exports.defaultOptions;
+    options = options || defaultOptions;
     // Power up ace on the textarea:
-    var editor = ace.edit(editorDiv);
+    var editor = edit(editorDiv);
     session = editor.getSession();
 
     session.setValue(element.value || element.innerHTML);
@@ -198,7 +197,7 @@ exports.transformTextarea = function(element, options) {
     setupSettingPanel(settingDiv, settingOpener, editor);
 
     var state = "";
-    event.addListener(settingOpener, "mousemove", function(e) {
+    addListener(settingOpener, "mousemove", function(e) {
         var rect = this.getBoundingClientRect();
         var x = e.clientX - rect.left, y = e.clientY - rect.top;
         if (x + y < (rect.width + rect.height)/2) {
@@ -210,7 +209,7 @@ exports.transformTextarea = function(element, options) {
         }
     });
 
-    event.addListener(settingOpener, "mousedown", function(e) {
+    addListener(settingOpener, "mousedown", function(e) {
         e.preventDefault();
         if (state == "toggle") {
             editor.setDisplaySettings();
@@ -220,7 +219,7 @@ exports.transformTextarea = function(element, options) {
         var rect = container.getBoundingClientRect();
         var startX = rect.width  + rect.left - e.clientX;
         var startY = rect.height  + rect.top - e.clientY;
-        event.capture(settingOpener, function(e) {
+        capture(settingOpener, function(e) {
             container.style.width = e.clientX - rect.left + startX + "px";
             container.style.height = e.clientY - rect.top + startY + "px";
             editor.resize();
@@ -427,7 +426,7 @@ function setupSettingPanel(settingDiv, settingOpener, editor) {
         builder.push("</select>");
     }
 
-    for (var option in exports.defaultOptions) {
+    for (var option in defaultOptions) {
         table.push("<tr><td>", desc[option], "</td>");
         table.push("<td>");
         renderOption(table, option, optionValues[option], editor.getOption(option));
@@ -455,15 +454,14 @@ function setupSettingPanel(settingDiv, settingOpener, editor) {
     var button = document.createElement("input");
     button.type = "button";
     button.value = "Hide";
-    event.addListener(button, "click", function() {
+    addListener(button, "click", function() {
         editor.setDisplaySettings(false);
     });
     settingDiv.appendChild(button);
     settingDiv.hideButton = button;
 }
 
-// Default startup options.
-exports.defaultOptions = {
+export const defaultOptions = {
     mode:               "javascript",
     theme:              "textmate",
     wrap:               "off",

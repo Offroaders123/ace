@@ -1,18 +1,16 @@
-"use strict";
-
-var dom = require("../lib/dom");
-require("../incremental_search");
-var iSearchCommandModule = require("../commands/incremental_search_commands");
+import { importCssString } from "../lib/dom.js";
+import "../incremental_search.js";
+import { iSearchStartCommands } from "../commands/incremental_search_commands.js";
 
 
-var HashHandler = require("./hash_handler").HashHandler;
-exports.handler = new HashHandler();
+import { HashHandler } from "./hash_handler.js";
+export const handler = new HashHandler();
 
-exports.handler.isEmacs = true;
-exports.handler.$id = "ace/keyboard/emacs";
+handler.isEmacs = true;
+handler.$id = "ace/keyboard/emacs";
 
 
-dom.importCssString(`
+importCssString(`
 .emacs-mode .ace_cursor{
     border: 1px rgba(50,250,50,0.8) solid!important;
     box-sizing: border-box!important;
@@ -38,7 +36,7 @@ dom.importCssString(`
 var $formerLongWords;
 var $formerLineStart;
 
-exports.handler.attach = function(editor) {
+handler.attach = function(editor) {
     // in emacs, gotowordleft/right should not count a space as a word..
     $formerLongWords = editor.session.$selectLongWords;
     editor.session.$selectLongWords = true;
@@ -99,13 +97,13 @@ exports.handler.attach = function(editor) {
     editor.renderer.$blockCursor = true;
     editor.setStyle("emacs-mode");
     editor.commands.addCommands(commands);
-    exports.handler.platform = editor.commands.platform;
+    handler.platform = editor.commands.platform;
     editor.$emacsModeHandler = this;
     editor.on('copy', this.onCopy);
     editor.on('paste', this.onPaste);
 };
 
-exports.handler.detach = function(editor) {
+handler.detach = function(editor) {
     editor.renderer.$blockCursor = false;
     editor.session.$selectLongWords = $formerLongWords;
     editor.session.$useEmacsStyleLineStart = $formerLineStart;
@@ -139,7 +137,7 @@ var $resetMarkMode = function(e) {
     e.editor.session.$emacsMark = null;
 };
 
-var keys = require("../lib/keys").KEY_MODS;
+import { KEY_MODS as keys } from "../lib/keys";
 var eMods = {C: "ctrl", S: "shift", M: "alt", CMD: "command"};
 var combinations = ["C-S-M-CMD",
                     "S-M-CMD", "C-M-CMD", "C-S-CMD", "C-S-M",
@@ -153,18 +151,18 @@ combinations.forEach(function(c) {
     eMods[hashId] = c.toLowerCase() + "-";
 });
 
-exports.handler.onCopy = function(e, editor) {
+handler.onCopy = function(e, editor) {
     if (editor.$handlesEmacsOnCopy) return;
     editor.$handlesEmacsOnCopy = true;
-    exports.handler.commands.killRingSave.exec(editor);
+    handler.commands.killRingSave.exec(editor);
     editor.$handlesEmacsOnCopy = false;
 };
 
-exports.handler.onPaste = function(e, editor) {
+handler.onPaste = function(e, editor) {
     editor.pushEmacsMark(editor.getCursorPosition());
 };
 
-exports.handler.bindKey = function(key, command) {
+handler.bindKey = function(key, command) {
     if (typeof key == "object")
         key = key[this.platform];
     if (!key)
@@ -190,7 +188,7 @@ exports.handler.bindKey = function(key, command) {
     }, this);
 };
 
-exports.handler.getStatusText = function(editor, data) {
+handler.getStatusText = function(editor, data) {
   var str = "";
   if (data.count)
     str += data.count;
@@ -199,7 +197,7 @@ exports.handler.getStatusText = function(editor, data) {
   return str;
 };
 
-exports.handler.handleKeyboard = function(data, hashId, key, keyCode) {
+handler.handleKeyboard = function(data, hashId, key, keyCode) {
     // if keyCode == -1 a non-printable key was pressed, such as just
     // control. Handling those is currently not supported in this handler
     if (keyCode === -1) return undefined;
@@ -306,7 +304,7 @@ exports.handler.handleKeyboard = function(data, hashId, key, keyCode) {
     return {command: command, args: args};
 };
 
-exports.emacsKeys = {
+export const emacsKeys = {
     // movement
     "Up|C-p"      : {command: "goorselect", args: ["golineup","selectup"]},
     "Down|C-n"    : {command: "goorselect", args: ["golinedown","selectdown"]},
@@ -388,9 +386,9 @@ exports.emacsKeys = {
 };
 
 
-exports.handler.bindKeys(exports.emacsKeys);
+handler.bindKeys(emacsKeys);
 
-exports.handler.addCommands({
+handler.addCommands({
     recenterTopBottom: function(editor) {
         var renderer = editor.renderer;
         var pos = renderer.$cursorLayer.getPixelPosition();
@@ -487,7 +485,7 @@ exports.handler.addCommands({
 
             var range = editor.getSelectionRange();
             var text = editor.session.getTextRange(range);
-            exports.killRing.add(text);
+            killRing.add(text);
 
             editor.session.remove(range);
             editor.clearSelection();
@@ -516,15 +514,15 @@ exports.handler.addCommands({
         }
         var text = editor.session.getTextRange(range);
         if (editor.prevOp.command == this)
-            exports.killRing.append(text);
+            killRing.append(text);
         else
-            exports.killRing.add(text);
+            killRing.add(text);
 
         editor.session.remove(range);
         editor.clearSelection();
     },
     yank: function(editor) {
-        editor.onPaste(exports.killRing.get() || '');
+        editor.onPaste(killRing.get() || '');
         editor.keyBinding.$data.lastCommand = "yank";
     },
     yankRotate: function(editor) {
@@ -532,12 +530,12 @@ exports.handler.addCommands({
             return;
         editor.undo();
         editor.session.$emacsMarkRing.pop(); // also undo recording mark
-        editor.onPaste(exports.killRing.rotate());
+        editor.onPaste(killRing.rotate());
         editor.keyBinding.$data.lastCommand = "yank";
     },
     killRegion: {
         exec: function(editor) {
-            exports.killRing.add(editor.getCopyText());
+            killRing.add(editor.getCopyText());
             editor.commands.byName.cut.exec(editor);
             editor.setEmacsMark(null);
         },
@@ -552,7 +550,7 @@ exports.handler.addCommands({
             editor.$handlesEmacsOnCopy = true;
             var marks = editor.session.$emacsMarkRing.slice(),
                 deselectedMarks = [];
-            exports.killRing.add(editor.getCopyText());
+            killRing.add(editor.getCopyText());
 
             setTimeout(function() {
                 function deselect() {
@@ -581,13 +579,13 @@ exports.handler.addCommands({
     }
 });
 
-exports.handler.addCommands(iSearchCommandModule.iSearchStartCommands);
+handler.addCommands(iSearchStartCommands);
 
-var commands = exports.handler.commands;
+var commands = handler.commands;
 commands.yank.isYank = true;
 commands.yankRotate.isYank = true;
 
-exports.killRing = {
+export const killRing = {
     $data: [],
     add: function(str) {
         str && this.$data.push(str);

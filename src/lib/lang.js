@@ -1,14 +1,12 @@
-"use strict";
-
-exports.last = function(a) {
+export function last(a) {
     return a[a.length - 1];
 };
 
-exports.stringReverse = function(string) {
+export function stringReverse(string) {
     return string.split("").reverse().join("");
 };
 
-exports.stringRepeat = function (string, count) {
+export function stringRepeat (string, count) {
     var result = '';
     while (count > 0) {
         if (count & 1)
@@ -23,15 +21,15 @@ exports.stringRepeat = function (string, count) {
 var trimBeginRegexp = /^\s\s*/;
 var trimEndRegexp = /\s\s*$/;
 
-exports.stringTrimLeft = function (string) {
+export function stringTrimLeft (string) {
     return string.replace(trimBeginRegexp, '');
 };
 
-exports.stringTrimRight = function (string) {
+export function stringTrimRight (string) {
     return string.replace(trimEndRegexp, '');
 };
 
-exports.copyObject = function(obj) {
+export function copyObject(obj) {
     var copy = {};
     for (var key in obj) {
         copy[key] = obj[key];
@@ -39,7 +37,7 @@ exports.copyObject = function(obj) {
     return copy;
 };
 
-exports.copyArray = function(array){
+export function copyArray(array){
     var copy = [];
     for (var i=0, l=array.length; i<l; i++) {
         if (array[i] && typeof array[i] == "object")
@@ -50,7 +48,7 @@ exports.copyArray = function(array){
     return copy;
 };
 
-exports.deepCopy = function deepCopy(obj) {
+export function deepCopy(obj) {
     if (typeof obj !== "object" || !obj)
         return obj;
     var copy;
@@ -70,7 +68,7 @@ exports.deepCopy = function deepCopy(obj) {
     return copy;
 };
 
-exports.arrayToMap = function(arr) {
+export function arrayToMap(arr) {
     var map = {};
     for (var i=0; i<arr.length; i++) {
         map[arr[i]] = 1;
@@ -79,7 +77,7 @@ exports.arrayToMap = function(arr) {
 
 };
 
-exports.createMap = function(props) {
+export function createMap(props) {
     var map = Object.create(null);
     for (var i in props) {
         map[i] = props[i];
@@ -90,7 +88,7 @@ exports.createMap = function(props) {
 /*
  * splice out of 'array' anything that === 'value'
  */
-exports.arrayRemove = function(array, value) {
+export function arrayRemove(array, value) {
   for (var i = 0; i <= array.length; i++) {
     if (value === array[i]) {
       array.splice(i, 1);
@@ -98,15 +96,15 @@ exports.arrayRemove = function(array, value) {
   }
 };
 
-exports.escapeRegExp = function(str) {
+export function escapeRegExp(str) {
     return str.replace(/([.*+?^${}()|[\]\/\\])/g, '\\$1');
 };
 
-exports.escapeHTML = function(str) {
+export function escapeHTML(str) {
     return ("" + str).replace(/&/g, "&#38;").replace(/"/g, "&#34;").replace(/'/g, "&#39;").replace(/</g, "&#60;");
 };
 
-exports.getMatchOffsets = function(string, regExp) {
+export function getMatchOffsets(string, regExp) {
     var matches = [];
 
     string.replace(regExp, function(str) {
@@ -120,7 +118,7 @@ exports.getMatchOffsets = function(string, regExp) {
 };
 
 /* deprecated */
-exports.deferredCall = function(fcn) {
+export function deferredCall(fcn) {
     var timer = null;
     var callback = function() {
         timer = null;
@@ -155,7 +153,7 @@ exports.deferredCall = function(fcn) {
 };
 
 
-exports.delayedCall = function(fcn, defaultTimeout) {
+export function delayedCall(fcn, defaultTimeout) {
     var timer = null;
     var callback = function() {
         timer = null;

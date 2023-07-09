@@ -1,7 +1,6 @@
-"use strict";
-var event = require("../lib/event");
+import { addListener, removeListener } from "../lib/event.js";
 
-exports.contextMenuHandler = function(e){
+export function contextMenuHandler(e){
     var host = e.target;
     var text = host.textInput.getElement();
     if (!host.selection.isEmpty())
@@ -21,8 +20,8 @@ exports.contextMenuHandler = function(e){
     text.setSelectionRange(0, w.length);
 
     var afterKeydown = false;
-    event.addListener(text, "keydown", function onKeydown() {
-        event.removeListener(text, "keydown", onKeydown);
+    addListener(text, "keydown", function onKeydown() {
+        removeListener(text, "keydown", onKeydown);
         afterKeydown = true;
     });
 
@@ -48,16 +47,16 @@ exports.contextMenuHandler = function(e){
     });
 };
 // todo support highlighting with typo.js
-var Editor = require("../editor").Editor;
+import { Editor } from "../editor.js";
 require("../config").defineOptions(Editor.prototype, "editor", {
     spellcheck: {
         set: function(val) {
             var text = this.textInput.getElement();
             text.spellcheck = !!val;
             if (!val)
-                this.removeListener("nativecontextmenu", exports.contextMenuHandler);
+                this.removeListener("nativecontextmenu", contextMenuHandler);
             else
-                this.on("nativecontextmenu", exports.contextMenuHandler);
+                this.on("nativecontextmenu", contextMenuHandler);
         },
         value: true
     }

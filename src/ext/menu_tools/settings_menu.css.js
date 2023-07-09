@@ -1,4 +1,4 @@
-module.exports = `#ace_settingsmenu, #kbshortcutmenu {
+export default `#ace_settingsmenu, #kbshortcutmenu {
     background-color: #F7F7F7;
     color: black;
     box-shadow: -5px 4px 5px rgba(126, 126, 126, 0.55);

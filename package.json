@@ -7,6 +7,7 @@
         "node": ">= 0.6.0"
     },
     "author": "Fabian Jakobs <fabian@c9.io>",
+    "type": "module",
     "main": "src/ace.js",
     "typings": "ace.d.ts",
     "repository": {
@@ -21,7 +22,7 @@
         "eslint": "^8.20.0",
         "istanbul": "^0.4.5",
         "standard-version": "^9.3.2",
-        "typescript": "^4.7.4"
+        "typescript": "^4.9.5"
     },
     "mappings": {
         "ace": "."

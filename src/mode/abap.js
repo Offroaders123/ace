@@ -1,17 +1,17 @@
-"use strict";
+import { AbapHighlightRules as Rules } from "./abap_highlight_rules.js";
+import { FoldMode } from "./folding/coffee.js";
+import { Range } from "../range.js";
+import { Mode as TextMode } from "./text.js";
+import { inherits } from "../lib/oop.js";
 
-var Rules = require("./abap_highlight_rules").AbapHighlightRules;
-var FoldMode = require("./folding/coffee").FoldMode;
-var Range = require("../range").Range;
-var TextMode = require("./text").Mode;
-var oop = require("../lib/oop");
-
-function Mode() {
+export class Mode {
+constructor() {
     this.HighlightRules = Rules;
     this.foldingRules = new FoldMode();
 }
+}
 
-oop.inherits(Mode, TextMode);
+inherits(Mode, TextMode);
 
 (function() {
     
@@ -24,5 +24,3 @@ oop.inherits(Mode, TextMode);
     
     this.$id = "ace/mode/abap";
 }).call(Mode.prototype);
-
-exports.Mode = Mode;

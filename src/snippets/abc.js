@@ -1,4 +1,2 @@
-"use strict";
-
-exports.snippetText = require("./abc.snippets");
-exports.scope = "abc";
+export { default as snippetText } from "./abc.snippets.js";
+export const scope = "abc";

@@ -1,24 +1,23 @@
-"use strict";
-
-var event = require("../lib/event");
-var nls = require("../config").nls;
-var useragent = require("../lib/useragent");
-var dom = require("../lib/dom");
-var lang = require("../lib/lang");
-var clipboard = require("../clipboard");
-var BROKEN_SETDATA = useragent.isChrome < 18;
-var USE_IE_MIME_TYPE =  useragent.isIE;
-var HAS_FOCUS_ARGS = useragent.isChrome > 63;
+import { addListener, preventDefault, addCommandKeyListener, capture } from "../lib/event.js";
+import { nls } from "../config.js";
+import { isChrome, isIE, isIOS as __isIOS, isMobile as __isMobile, isEdge, isAndroid, isMac, isWin } from "../lib/useragent.js";
+import { createElement, computedStyle, translate } from "../lib/dom.js";
+import { delayedCall } from "../lib/lang.js";
+import { pasteCancelled } from "../clipboard.js";
+var BROKEN_SETDATA = isChrome < 18;
+var USE_IE_MIME_TYPE =  isIE;
+var HAS_FOCUS_ARGS = isChrome > 63;
 var MAX_LINE_LENGTH = 400;
 
-var KEYS = require("../lib/keys");
-var MODS = KEYS.KEY_MODS;
-var isIOS = useragent.isIOS;
+import { KEY_MODS, right, left as _left, up, home, end, down, keyCodeToString } from "../lib/keys.js";
+var MODS = KEY_MODS;
+var isIOS = __isIOS;
 var valueResetRegex = isIOS ? /\s/ : /\n/;
-var isMobile = useragent.isMobile;
+var isMobile = __isMobile;
 
-var TextInput = function(parentNode, host) {
-    var text = dom.createElement("textarea");
+export class TextInput {
+  constructor(parentNode, host) {
+    var text = createElement("textarea");
     text.className = "ace_text-input";
 
     text.setAttribute("wrap", "off");
@@ -79,17 +78,17 @@ var TextInput = function(parentNode, host) {
     this.setAriaOptions({role: "textbox"});
     this.setAriaLabel();
 
-    event.addListener(text, "blur", function(e) {
+    addListener(text, "blur", function(e) {
         if (ignoreFocusEvents) return;
         host.onBlur(e);
         isFocused = false;
         if (isMobile && !isIOS)
             document.removeEventListener("selectionchange", detectSelectionChange);
     }, host);
-    event.addListener(text, "focus", function(e) {
+    addListener(text, "focus", function(e) {
         if (ignoreFocusEvents) return;
         isFocused = true;
-        if (useragent.isEdge) {
+        if (isEdge) {
             // on edge focus event is fired even if document itself is not focused
             try {
                 if (!document.hasFocus())
@@ -97,7 +96,7 @@ var TextInput = function(parentNode, host) {
             } catch(e) {}
         }
         host.onFocus(e);
-        if (useragent.isEdge)
+        if (isEdge)
             setTimeout(resetSelection);
         else
             resetSelection();
@@ -305,7 +304,7 @@ var TextInput = function(parentNode, host) {
             startDiff = -1;
         }
         var repeat = Math.abs(startDiff);
-        var key = startDiff > 0 ? KEYS.right : KEYS.left;
+        var key = startDiff > 0 ? right : _left;
         for (var i = 0; i < repeat; i++) {
             host.onCommandKey({}, 0, key);
         }
@@ -363,7 +362,7 @@ var TextInput = function(parentNode, host) {
             
             // some android keyboards converts two spaces into sentence end, which is not useful for code
             var shouldReset = false;
-            if (useragent.isAndroid && inserted == ". ") {
+            if (isAndroid && inserted == ". ") {
                 inserted = "  ";
                 shouldReset = true;
             }
@@ -427,7 +426,7 @@ var TextInput = function(parentNode, host) {
     var doCopy = function(e, isCut) {
         var data = host.getCopyText();
         if (!data)
-            return event.preventDefault(e);
+            return preventDefault(e);
 
         if (handleClipboardData(e, data)) {
             if (isIOS) {
@@ -438,7 +437,7 @@ var TextInput = function(parentNode, host) {
                 }, 10);
             }
             isCut ? host.onCut() : host.onCopy();
-            event.preventDefault(e);
+            preventDefault(e);
         } else {
             copied = true;
             text.value = data;
@@ -461,14 +460,14 @@ var TextInput = function(parentNode, host) {
     
     var onPaste = function(e) {
         var data = handleClipboardData(e);
-        if (clipboard.pasteCancelled())
+        if (pasteCancelled())
             return;
         if (typeof data == "string") {
             if (data)
                 host.onPaste(data, e);
-            if (useragent.isIE)
+            if (isIE)
                 setTimeout(resetSelection);
-            event.preventDefault(e);
+            preventDefault(e);
         }
         else {
             text.value = "";
@@ -476,20 +475,20 @@ var TextInput = function(parentNode, host) {
         }
     };
 
-    event.addCommandKeyListener(text, host.onCommandKey.bind(host), host);
+    addCommandKeyListener(text, host.onCommandKey.bind(host), host);
 
-    event.addListener(text, "select", onSelect, host);
-    event.addListener(text, "input", onInput, host);
+    addListener(text, "select", onSelect, host);
+    addListener(text, "input", onInput, host);
 
-    event.addListener(text, "cut", onCut, host);
-    event.addListener(text, "copy", onCopy, host);
-    event.addListener(text, "paste", onPaste, host);
+    addListener(text, "cut", onCut, host);
+    addListener(text, "copy", onCopy, host);
+    addListener(text, "paste", onPaste, host);
 
 
     // Opera has no clipboard events
     if (!('oncut' in text) || !('oncopy' in text) || !('onpaste' in text)) {
-        event.addListener(parentNode, "keydown", function(e) {
-            if ((useragent.isMac && !e.metaKey) || !e.ctrlKey)
+        addListener(parentNode, "keydown", function(e) {
+            if ((isMac && !e.metaKey) || !e.ctrlKey)
                 return;
 
             switch (e.keyCode) {
@@ -586,7 +585,7 @@ var TextInput = function(parentNode, host) {
         ignoreFocusEvents = false;
     }
 
-    var syncComposition = lang.delayedCall(onCompositionUpdate, 50).schedule.bind(null, null);
+    var syncComposition = delayedCall(onCompositionUpdate, 50).schedule.bind(null, null);
     
     function onKeyup(e) {
         // workaround for a bug in ie where pressing esc silently moves selection out of textarea
@@ -599,11 +598,11 @@ var TextInput = function(parentNode, host) {
         syncComposition();
     }
 
-    event.addListener(text, "compositionstart", onCompositionStart, host);
-    event.addListener(text, "compositionupdate", onCompositionUpdate, host);
-    event.addListener(text, "keyup", onKeyup, host);
-    event.addListener(text, "keydown", syncComposition, host);
-    event.addListener(text, "compositionend", onCompositionEnd, host);
+    addListener(text, "compositionstart", onCompositionStart, host);
+    addListener(text, "compositionupdate", onCompositionUpdate, host);
+    addListener(text, "keyup", onKeyup, host);
+    addListener(text, "keydown", syncComposition, host);
+    addListener(text, "compositionend", onCompositionEnd, host);
 
     this.getElement = function() {
         return text;
@@ -635,16 +634,16 @@ var TextInput = function(parentNode, host) {
         if (!tempStyle)
             tempStyle = text.style.cssText;
         text.style.cssText = (bringToFront ? "z-index:100000;" : "")
-            + (useragent.isIE ? "opacity:0.1;" : "")
+            + (isIE ? "opacity:0.1;" : "")
             + "text-indent: -" + (lastSelectionStart + lastSelectionEnd) * host.renderer.characterWidth * 0.5 + "px;";
 
         var rect = host.container.getBoundingClientRect();
-        var style = dom.computedStyle(host.container);
+        var style = computedStyle(host.container);
         var top = rect.top + (parseInt(style.borderTopWidth) || 0);
         var left = rect.left + (parseInt(rect.borderLeftWidth) || 0);
         var maxTop = rect.bottom - top - text.clientHeight -2;
         var move = function(e) {
-            dom.translate(text, e.clientX - left - 2, Math.min(e.clientY - top - 2, maxTop));
+            translate(text, e.clientX - left - 2, Math.min(e.clientY - top - 2, maxTop));
         }; 
         move(e);
 
@@ -655,8 +654,8 @@ var TextInput = function(parentNode, host) {
 
         clearTimeout(closeTimeout);
         // on windows context menu is opened after mouseup
-        if (useragent.isWin)
-            event.capture(host.container, move, onContextMenuClose);
+        if (isWin)
+            capture(host.container, move, onContextMenuClose);
     };
 
     this.onContextMenuClose = onContextMenuClose;
@@ -678,13 +677,13 @@ var TextInput = function(parentNode, host) {
         host.textInput.onContextMenu(e);
         onContextMenuClose();
     };
-    event.addListener(text, "mouseup", onContextMenu, host);
-    event.addListener(text, "mousedown", function(e) {
+    addListener(text, "mouseup", onContextMenu, host);
+    addListener(text, "mousedown", function (e) {
         e.preventDefault();
         onContextMenuClose();
     }, host);
-    event.addListener(host.renderer.scroller, "contextmenu", onContextMenu, host);
-    event.addListener(text, "contextmenu", onContextMenu, host);
+    addListener(host.renderer.scroller, "contextmenu", onContextMenu, host);
+    addListener(text, "contextmenu", onContextMenu, host);
     
     if (isIOS)
         addIosSelectionHandler(parentNode, host, text);
@@ -719,13 +718,13 @@ var TextInput = function(parentNode, host) {
             var modifier = 0;
             // console.log(selectionStart, selectionEnd);
             if (selectionStart == 0) {
-                key = KEYS.up;
+                key = up;
             } else if (selectionStart == 1) {
-                key = KEYS.home;
+                key = home;
             } else if (selectionEnd > lastSelectionEnd && lastValue[selectionEnd] == "\n") {
-                key = KEYS.end;
+                key = end;
             } else if (selectionStart < lastSelectionStart && lastValue[selectionStart - 1] == " ") {
-                key = KEYS.left;
+                key = _left;
                 modifier = MODS.option;
             } else if (
                 selectionStart < lastSelectionStart
@@ -737,9 +736,9 @@ var TextInput = function(parentNode, host) {
             ) {
                 key = KEYS.left;
             } else if (selectionEnd > lastSelectionEnd && lastValue.slice(0, selectionEnd).split("\n").length > 2) {
-                key = KEYS.down;
+                key = down;
             } else if (selectionEnd > lastSelectionEnd && lastValue[selectionEnd - 1] == " ") {
-                key = KEYS.right;
+                key = right;
                 modifier = MODS.option;
             } else if (
                 selectionEnd > lastSelectionEnd
@@ -758,7 +757,7 @@ var TextInput = function(parentNode, host) {
             if (key) {
                 var result = host.onCommandKey({}, modifier, key);
                 if (!result && host.commands) {
-                    key = KEYS.keyCodeToString(key);
+                    key = keyCodeToString(key);
                     var command = host.commands.findKeyCommand(modifier, key);
                     if (command)
                         host.execCommand(command);
@@ -779,10 +778,10 @@ var TextInput = function(parentNode, host) {
         if (text.parentElement)
             text.parentElement.removeChild(text);
     };
+}
 };
 
-exports.TextInput = TextInput;
-exports.$setUserAgentForTests = function(_isMobile, _isIOS) {
+export function $setUserAgentForTests(_isMobile, _isIOS) {
     isMobile = _isMobile;
     isIOS = _isIOS;
 };

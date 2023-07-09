@@ -1,10 +1,9 @@
-"use strict";
+import { Range } from "./range.js";
+import { Search } from "./search.js";
+import { SearchHighlight } from "./search_highlight.js";
+import { IncrementalSearchKeyboardHandler, iSearchStartCommands } from "./commands/incremental_search_commands.js";
 
-var Range = require("./range").Range;
-var Search = require("./search").Search;
-var SearchHighlight = require("./search_highlight").SearchHighlight;
-var iSearchCommandModule = require("./commands/incremental_search_commands");
-var ISearchKbd = iSearchCommandModule.IncrementalSearchKeyboardHandler;
+var ISearchKbd = IncrementalSearchKeyboardHandler;
 
 // regexp handling
 
@@ -40,7 +39,7 @@ function objectToRegExp(obj) {
  * - the cursor is moved to the next match
  *
  **/
-class IncrementalSearch extends Search {
+export class IncrementalSearch extends Search {
     /**
      * Creates a new `IncrementalSearch` object.
      **/
@@ -213,17 +212,14 @@ class IncrementalSearch extends Search {
 
 }
 
-exports.IncrementalSearch = IncrementalSearch;
-
-
 /**
  *
  * Config settings for enabling/disabling [[IncrementalSearch `IncrementalSearch`]].
  *
  **/
 
-var dom = require('./lib/dom');
-dom.importCssString(`
+import { importCssString } from './lib/dom.js';
+importCssString(`
 .ace_marker-layer .ace_isearch-result {
   position: absolute;
   z-index: 6;
@@ -240,20 +236,21 @@ div.ace_isearch-result {
 }`, "incremental-search-highlighting", false);
 
 // support for default keyboard handler
-var commands = require("./commands/command_manager");
+import { CommandManager } from "./commands/command_manager.js";
 (function() {
     this.setupIncrementalSearch = function(editor, val) {
         if (this.usesIncrementalSearch == val) return;
         this.usesIncrementalSearch = val;
-        var iSearchCommands = iSearchCommandModule.iSearchStartCommands;
+        var iSearchCommands = iSearchStartCommands;
         var method = val ? 'addCommands' : 'removeCommands';
         this[method](iSearchCommands);
     };
-}).call(commands.CommandManager.prototype);
+}).call(CommandManager.prototype);
 
 // incremental search config option
-var Editor = require("./editor").Editor;
-require("./config").defineOptions(Editor.prototype, "editor", {
+import { Editor } from "./editor.js";
+import { defineOptions } from "./config.js";
+defineOptions(Editor.prototype, "editor", {
     useIncrementalSearch: {
         set: function(val) {
             this.keyBinding.$handlers.forEach(function(handler) {

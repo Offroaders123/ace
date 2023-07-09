@@ -1,12 +1,15 @@
-"use strict";
-
-var oop = require("./lib/oop");
-var EventEmitter = require("./lib/event_emitter").EventEmitter;
+import { implement } from "./lib/oop.js";
+import { EventEmitter } from "./lib/event_emitter.js";
 
 /**
  * Defines a floating pointer in the document. Whenever text is inserted or deleted before the cursor, the position of the anchor is updated.
  **/
-class Anchor {
+export class Anchor {
+    /**
+     * experimental: allows anchor to stick to the next on the left
+     */
+    $insertRight = false;
+
     /**
      * Creates a new `Anchor` and associates it with a document.
      *
@@ -151,12 +154,7 @@ class Anchor {
     }
 }
 
-/**
- * experimental: allows anchor to stick to the next on the left
- */
-Anchor.prototype.$insertRight = false;
-
-oop.implement(Anchor.prototype, EventEmitter);
+implement(Anchor.prototype, EventEmitter);
 
 function $pointsInOrder(point1, point2, equalPointsInOrder) {
     var bColIsAfter = equalPointsInOrder ? point1.column <= point2.column : point1.column < point2.column;
@@ -195,5 +193,3 @@ function $getTransformedPoint(delta, point, moveIfEqual) {
         column: deltaStart.column
     };
 }
-
-exports.Anchor = Anchor;

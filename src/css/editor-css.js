@@ -9,7 +9,7 @@ for (var i = 1; i < 16; i++) {
 }
 styles.join("\\n")
 */
-module.exports = `
+export default `
 .ace_br1 {border-top-left-radius    : 3px;}
 .ace_br2 {border-top-right-radius   : 3px;}
 .ace_br3 {border-top-left-radius    : 3px; border-top-right-radius:    3px;}

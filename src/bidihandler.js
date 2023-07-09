@@ -1,14 +1,14 @@
-"use strict";
+import * as bidiUtil from "./lib/bidiutil.js";
+import { L, DOT, hasBidiCharacters, doBidiReorder, EN, ON_R, R, AN, R_H, B, RLE, getVisualFromLogicalIdx } from "./lib/bidiutil.js";
+import { stringRepeat } from "./lib/lang.js";
 
-var bidiUtil = require("./lib/bidiutil");
-var lang = require("./lib/lang");
 var bidiRE = /[\u0590-\u05f4\u0600-\u06ff\u0700-\u08ac\u202B]/;
 
 /**
  * This object is used to ensure Bi-Directional support (for languages with text flowing from right to left, like Arabic or Hebrew)
  * including correct caret positioning, text selection mouse and keyboard arrows functioning
  **/
-class BidiHandler {
+export class BidiHandler {
     /**
      * Creates a new `BidiHandler` object
      * @param {EditSession} session The session to use
@@ -118,7 +118,7 @@ class BidiHandler {
 
                 if(splitIndex > 0 && splits.length) {
                     this.wrapIndent = splits.indent;
-                    this.wrapOffset = this.wrapIndent * this.charWidths[bidiUtil.L];
+                    this.wrapOffset = this.wrapIndent * this.charWidths[L];
                     this.line = (splitIndex < splits.length) ?
                         this.line.substring(splits[splitIndex - 1], splits[splitIndex]) :
                             this.line.substring(splits[splits.length - 1]);
@@ -127,11 +127,11 @@ class BidiHandler {
                 }
 
                 if (splitIndex == splits.length) {
-                    this.line += (this.showInvisibles) ? endOfLine : bidiUtil.DOT;
+                    this.line += (this.showInvisibles) ? endOfLine : DOT;
                 }
             }
         } else {
-            this.line += this.showInvisibles ? endOfLine : bidiUtil.DOT;
+            this.line += this.showInvisibles ? endOfLine : DOT;
         }
             
         /* replace tab and wide characters by commensurate spaces */
@@ -140,21 +140,21 @@ class BidiHandler {
             if (ch === '\t' || session.isFullWidth(ch.charCodeAt(0))) {
                 size = (ch === '\t') ? session.getScreenTabSize(i + shift) : 2;
                 shift += size - 1;
-                return lang.stringRepeat(bidiUtil.DOT, size);
+                return stringRepeat(DOT, size);
             }
             return ch;
         });
 
         if (this.isRtlDir) {
-            this.fontMetrics.$main.textContent = (this.line.charAt(this.line.length - 1) == bidiUtil.DOT) ? this.line.substr(0, this.line.length - 1) : this.line;
+            this.fontMetrics.$main.textContent = (this.line.charAt(this.line.length - 1) == DOT) ? this.line.substr(0, this.line.length - 1) : this.line;
             this.rtlLineOffset = this.contentWidth - this.fontMetrics.$main.getBoundingClientRect().width;
         }
     }
     
     updateBidiMap() {
         var textCharTypes = [];
-        if (bidiUtil.hasBidiCharacters(this.line, textCharTypes) || this.isRtlDir) {
-             this.bidiMap = bidiUtil.doBidiReorder(this.line, textCharTypes, this.isRtlDir);
+        if (hasBidiCharacters(this.line, textCharTypes) || this.isRtlDir) {
+             this.bidiMap = doBidiReorder(this.line, textCharTypes, this.isRtlDir);
         } else {
             this.bidiMap = {};
         }
@@ -180,10 +180,10 @@ class BidiHandler {
         var characterWidth = this.characterWidth = fontMetrics.$characterSize.width;
         var bidiCharWidth = fontMetrics.$measureCharWidth("\u05d4");
 
-        this.charWidths[bidiUtil.L] = this.charWidths[bidiUtil.EN] = this.charWidths[bidiUtil.ON_R] = characterWidth;
-        this.charWidths[bidiUtil.R] = this.charWidths[bidiUtil.AN] = bidiCharWidth;
-        this.charWidths[bidiUtil.R_H] = bidiCharWidth * 0.45;
-        this.charWidths[bidiUtil.B] = this.charWidths[bidiUtil.RLE] = 0;
+        this.charWidths[L] = this.charWidths[EN] = this.charWidths[ON_R] = characterWidth;
+        this.charWidths[R] = this.charWidths[AN] = bidiCharWidth;
+        this.charWidths[R_H] = bidiCharWidth * 0.45;
+        this.charWidths[B] = this.charWidths[RLE] = 0;
 
         this.currentRow = null;
     }
@@ -230,7 +230,7 @@ class BidiHandler {
         col -= this.wrapIndent;
         var leftBoundary = (this.line.charAt(0) === this.RLE) ? 1 : 0;
         var logicalIdx = (col > leftBoundary) ? (this.session.getOverwrite() ? col : col - 1) : leftBoundary;
-        var visualIdx = bidiUtil.getVisualFromLogicalIdx(logicalIdx, this.bidiMap),
+        var visualIdx = getVisualFromLogicalIdx(logicalIdx, this.bidiMap),
             levels = this.bidiMap.bidiLevels, left = 0;
 
         if (!this.session.getOverwrite() && col <= leftBoundary && levels[visualIdx] % 2 !== 0)
@@ -351,5 +351,3 @@ class BidiHandler {
     }
 
 }
-
-exports.BidiHandler = BidiHandler;

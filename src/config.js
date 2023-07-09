@@ -1,11 +1,12 @@
+// @ts-expect-error - something can't be strict in here looks like
 "no use strict";
 
-var lang = require("./lib/lang");
-var net = require("./lib/net");
-var dom = require("./lib/dom");
-var AppConfig = require("./lib/app_config").AppConfig;
+import { copyObject } from "./lib/lang.js";
+import { loadScript } from "./lib/net.js";
+import { useStrictCSP } from "./lib/dom.js";
+import { AppConfig } from "./lib/app_config.js";
 
-module.exports = exports = new AppConfig();
+export default new AppConfig();
 
 var options = {
     packaged: false,
@@ -20,29 +21,29 @@ var options = {
     useStrictCSP: null
 };
 
-exports.get = function(key) {
+export function get(key) {
     if (!options.hasOwnProperty(key))
         throw new Error("Unknown config key: " + key);
     return options[key];
 };
 
-exports.set = function(key, value) {
+export function set(key, value) {
     if (options.hasOwnProperty(key))
         options[key] = value;
     else if (this.setDefaultValue("", key, value) == false)
         throw new Error("Unknown config key: " + key);
     if (key == "useStrictCSP")
-        dom.useStrictCSP(value);
+        useStrictCSP(value);
 };
 
-exports.all = function() {
-    return lang.copyObject(options);
+export function all() {
+    return copyObject(options);
 };
 
-exports.$modes = {};
+export const $modes = {};
 
 // module loading
-exports.moduleUrl = function(name, component) {
+export function moduleUrl(name, component) {
     if (options.$moduleUrls[name])
         return options.$moduleUrls[name];
 
@@ -70,7 +71,7 @@ exports.moduleUrl = function(name, component) {
     return path + component + sep + base + this.get("suffix");
 };
 
-exports.setModuleUrl = function(name, subst) {
+export function setModuleUrl(name, subst) {
     return options.$moduleUrls[name] = subst;
 };
 
@@ -82,14 +83,14 @@ var loader = function(moduleName, cb) {
     console.error("loader is not configured");
 };
 var customLoader;
-exports.setLoader = function(cb) {
+export function setLoader(cb) {
     customLoader = cb;
-};
+}
 
-exports.dynamicModules = Object.create(null);
-exports.$loading = {};
-exports.$loaded = {};
-exports.loadModule = function(moduleName, onLoad) {
+export const dynamicModules = Object.create(null);
+export const $loading = {};
+export const $loaded = {};
+export function loadModule(moduleName, onLoad) {
     var loadedModule, moduleType;
     if (Array.isArray(moduleName)) {
         moduleType = moduleName[0];
@@ -98,34 +99,34 @@ exports.loadModule = function(moduleName, onLoad) {
 
     var load = function (module) {
         // require(moduleName) can return empty object if called after require([moduleName], callback)
-        if (module && !exports.$loading[moduleName]) return onLoad && onLoad(module);
+        if (module && !$loading[moduleName]) return onLoad && onLoad(module);
 
-        if (!exports.$loading[moduleName]) exports.$loading[moduleName] = [];
+        if (!$loading[moduleName]) $loading[moduleName] = [];
 
-        exports.$loading[moduleName].push(onLoad);
+        $loading[moduleName].push(onLoad);
 
-        if (exports.$loading[moduleName].length > 1) return;
+        if ($loading[moduleName].length > 1) return;
 
         var afterLoad = function() {
             loader(moduleName, function(err, module) {
-                if (module) exports.$loaded[moduleName] = module;
-                exports._emit("load.module", {name: moduleName, module: module});
-                var listeners = exports.$loading[moduleName];
-                exports.$loading[moduleName] = null;
+                if (module) $loaded[moduleName] = module;
+                _emit("load.module", {name: moduleName, module: module});
+                var listeners = $loading[moduleName];
+                $loading[moduleName] = null;
                 listeners.forEach(function(onLoad) {
                     onLoad && onLoad(module);
                 });
             });
         };
 
-        if (!exports.get("packaged")) return afterLoad();
+        if (!get("packaged")) return afterLoad();
 
-        net.loadScript(exports.moduleUrl(moduleName, moduleType), afterLoad);
+        loadScript(moduleUrl(moduleName, moduleType), afterLoad);
         reportErrorIfPathIsNotConfigured();
     };
 
-    if (exports.dynamicModules[moduleName]) {
-        exports.dynamicModules[moduleName]().then(function (module) {
+    if (dynamicModules[moduleName]) {
+        dynamicModules[moduleName]().then(function (module) {
             if (module.default) {
                 load(module.default);
             }
@@ -138,19 +139,19 @@ exports.loadModule = function(moduleName, onLoad) {
         try {
             loadedModule = this.$require(moduleName);
         } catch (e) {}
-        load(loadedModule || exports.$loaded[moduleName]);
+        load(loadedModule || $loaded[moduleName]);
     }
 };
 
-exports.$require = function(moduleName) {
+export function $require(moduleName) {
     if (typeof module.require == "function") {
         var req = "require";
         return module[req](moduleName);
     }
 };
 
-exports.setModuleLoader = function (moduleName, onLoad) {
-    exports.dynamicModules[moduleName] = onLoad;
+export function setModuleLoader (moduleName, onLoad) {
+    dynamicModules[moduleName] = onLoad;
 };
 
 var reportErrorIfPathIsNotConfigured = function() {
@@ -168,6 +169,6 @@ var reportErrorIfPathIsNotConfigured = function() {
     }
 };
 
-exports.version = "1.23.2";
+export const version = "1.23.2";
 
 

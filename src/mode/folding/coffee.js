@@ -1,13 +1,14 @@
-"use strict";
+import { inherits } from "../../lib/oop.js";
+import { FoldMode as BaseFoldMode } from "./fold_mode.js";
+import { Range } from "../../range.js";
 
-var oop = require("../../lib/oop");
-var BaseFoldMode = require("./fold_mode").FoldMode;
-var Range = require("../../range").Range;
+/**
+ * @class
+*/
+export var FoldMode = function() {};
+inherits(FoldMode, BaseFoldMode);
 
-var FoldMode = exports.FoldMode = function() {};
-oop.inherits(FoldMode, BaseFoldMode);
-
-(function() {
+(/** @this { typeof FoldMode.prototype } */ function() {
 
     this.getFoldWidgetRange = function(session, foldStyle, row) {
         var range = this.indentationBlock(session, row);

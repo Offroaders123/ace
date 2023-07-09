@@ -1,15 +1,15 @@
-"use strict";
+import { addListener, addMultiMouseDownListener, addMouseWheelListener, capture, stopEvent } from "../lib/event.js";
+import { isIE, isWebKit, isOldIE, isMac } from "../lib/useragent.js";
+import { DefaultHandlers } from "./default_handlers.js";
+import { GutterHandler as DefaultGutterHandler } from "./default_gutter_handler.js";
+import { MouseEvent } from "./mouse_event.js";
+import { DragdropHandler } from "./dragdrop_handler.js";
+import { addTouchListeners } from "./touch_handler.js";
+import { defineOptions } from "../config.js";
 
-var event = require("../lib/event");
-var useragent = require("../lib/useragent");
-var DefaultHandlers = require("./default_handlers").DefaultHandlers;
-var DefaultGutterHandler = require("./default_gutter_handler").GutterHandler;
-var MouseEvent = require("./mouse_event").MouseEvent;
-var DragdropHandler = require("./dragdrop_handler").DragdropHandler;
-var addTouchListeners = require("./touch_handler").addTouchListeners;
-var config = require("../config");
+export class MouseHandler {
+    releaseMouse = null;
 
-class MouseHandler {
     constructor(editor) {
         var _self = this;
         this.editor = editor;
@@ -33,28 +33,28 @@ class MouseHandler {
         };
 
         var mouseTarget = editor.renderer.getMouseEventTarget();
-        event.addListener(mouseTarget, "click", this.onMouseEvent.bind(this, "click"), editor);
-        event.addListener(mouseTarget, "mousemove", this.onMouseMove.bind(this, "mousemove"), editor);
-        event.addMultiMouseDownListener([
+        addListener(mouseTarget, "click", this.onMouseEvent.bind(this, "click"), editor);
+        addListener(mouseTarget, "mousemove", this.onMouseMove.bind(this, "mousemove"), editor);
+        addMultiMouseDownListener([
             mouseTarget,
             editor.renderer.scrollBarV && editor.renderer.scrollBarV.inner,
             editor.renderer.scrollBarH && editor.renderer.scrollBarH.inner,
             editor.textInput && editor.textInput.getElement()
         ].filter(Boolean), [400, 300, 250], this, "onMouseEvent", editor);
-        event.addMouseWheelListener(editor.container, this.onMouseWheel.bind(this, "mousewheel"), editor);
+        addMouseWheelListener(editor.container, this.onMouseWheel.bind(this, "mousewheel"), editor);
         addTouchListeners(editor.container, editor);
 
         var gutterEl = editor.renderer.$gutter;
-        event.addListener(gutterEl, "mousedown", this.onMouseEvent.bind(this, "guttermousedown"), editor);
-        event.addListener(gutterEl, "click", this.onMouseEvent.bind(this, "gutterclick"), editor);
-        event.addListener(gutterEl, "dblclick", this.onMouseEvent.bind(this, "gutterdblclick"), editor);
-        event.addListener(gutterEl, "mousemove", this.onMouseEvent.bind(this, "guttermousemove"), editor);
+        addListener(gutterEl, "mousedown", this.onMouseEvent.bind(this, "guttermousedown"), editor);
+        addListener(gutterEl, "click", this.onMouseEvent.bind(this, "gutterclick"), editor);
+        addListener(gutterEl, "dblclick", this.onMouseEvent.bind(this, "gutterdblclick"), editor);
+        addListener(gutterEl, "mousemove", this.onMouseEvent.bind(this, "guttermousemove"), editor);
 
-        event.addListener(mouseTarget, "mousedown", focusEditor, editor);
-        event.addListener(gutterEl, "mousedown", focusEditor, editor);
-        if (useragent.isIE && editor.renderer.scrollBarV) {
-            event.addListener(editor.renderer.scrollBarV.element, "mousedown", focusEditor, editor);
-            event.addListener(editor.renderer.scrollBarH.element, "mousedown", focusEditor, editor);
+        addListener(mouseTarget, "mousedown", focusEditor, editor);
+        addListener(gutterEl, "mousedown", focusEditor, editor);
+        if (isIE && editor.renderer.scrollBarV) {
+            addListener(editor.renderer.scrollBarV.element, "mousedown", focusEditor, editor);
+            addListener(editor.renderer.scrollBarH.element, "mousedown", focusEditor, editor);
         }
 
         editor.on("mousemove", function(e){
@@ -116,7 +116,7 @@ class MouseHandler {
             if (!e) return;
             // if editor is loaded inside iframe, and mouseup event is outside
             // we won't recieve it, so we cancel on first mousemove without button
-            if (useragent.isWebKit && !e.which && self.releaseMouse)
+            if (isWebKit && !e.which && self.releaseMouse)
                 return self.releaseMouse();
 
             self.x = e.clientX;
@@ -145,7 +145,7 @@ class MouseHandler {
             self.$mouseMoved = false;
         };
 
-        if (useragent.isOldIE && ev.domEvent.type == "dblclick") {
+        if (isOldIE && ev.domEvent.type == "dblclick") {
             return setTimeout(function() {onCaptureEnd(ev);});
         }
 
@@ -164,7 +164,7 @@ class MouseHandler {
         editor.startOperation({command: {name: "mouse"}});
 
         self.$onCaptureMouseMove = onMouseMove;
-        self.releaseMouse = event.capture(this.editor.container, onMouseMove, onCaptureEnd);
+        self.releaseMouse = capture(this.editor.container, onMouseMove, onCaptureEnd);
         var timerId = setInterval(onCaptureInterval, 20);
     }
     cancelContextMenu() {
@@ -173,7 +173,7 @@ class MouseHandler {
                 return;
             this.editor.off("nativecontextmenu", stop);
             if (e && e.domEvent)
-                event.stopEvent(e.domEvent);
+                stopEvent(e.domEvent);
         }.bind(this);
         setTimeout(stop, 10);
         this.editor.on("nativecontextmenu", stop);
@@ -183,15 +183,10 @@ class MouseHandler {
     }
 }
 
-MouseHandler.prototype.releaseMouse = null;
-
-config.defineOptions(MouseHandler.prototype, "mouseHandler", {
+defineOptions(MouseHandler.prototype, "mouseHandler", {
     scrollSpeed: {initialValue: 2},
-    dragDelay: {initialValue: (useragent.isMac ? 150 : 0)},
+    dragDelay: {initialValue: (isMac ? 150 : 0)},
     dragEnabled: {initialValue: true},
     focusTimeout: {initialValue: 0},
     tooltipFollowsMouse: {initialValue: true}
 });
-
-
-exports.MouseHandler = MouseHandler;

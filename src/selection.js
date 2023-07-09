@@ -1,9 +1,7 @@
-"use strict";
-
-var oop = require("./lib/oop");
-var lang = require("./lib/lang");
-var EventEmitter = require("./lib/event_emitter").EventEmitter;
-var Range = require("./range").Range;
+import { implement } from "./lib/oop.js";
+import { stringReverse } from "./lib/lang.js";
+import { EventEmitter } from "./lib/event_emitter.js";
+import { Range } from "./range.js";
 
 /**
  * Contains the cursor position and the text selection of an edit session.
@@ -29,7 +27,8 @@ var Range = require("./range").Range;
  *
  * @constructor
  **/
-var Selection = function(session) {
+export class Selection {
+    constructor(session) {
     this.session = session;
     this.doc = session.getDocument();
 
@@ -54,11 +53,12 @@ var Selection = function(session) {
         if (!self.$isEmpty && !self.$silent)
             self._emit("changeSelection");
     });
+    }
 };
 
 (function() {
 
-    oop.implement(this, EventEmitter);
+    implement(this, EventEmitter);
 
     /**
      * Returns `true` if the selection is empty.
@@ -584,7 +584,7 @@ var Selection = function(session) {
             str = this.doc.getLine(row).substring(0, column);
         }
 
-        var leftOfCursor = lang.stringReverse(str);
+        var leftOfCursor = stringReverse(str);
         this.session.nonTokenRe.lastIndex = 0;
         this.session.tokenRe.lastIndex = 0;
 
@@ -696,7 +696,7 @@ var Selection = function(session) {
                 line = "";
         }
 
-        var leftOfCursor = lang.stringReverse(line);
+        var leftOfCursor = stringReverse(line);
         var index = this.$shortWordEndIndex(leftOfCursor);
 
         return this.moveCursorTo(row, column - index);
@@ -912,5 +912,3 @@ var Selection = function(session) {
     };
 
 }).call(Selection.prototype);
-
-exports.Selection = Selection;

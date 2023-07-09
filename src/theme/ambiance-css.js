@@ -1,4 +1,4 @@
-module.exports = `.ace-ambiance .ace_gutter {
+export default `.ace-ambiance .ace_gutter {
   background-color: #3d3d3d;
   background-image: linear-gradient(left, #3D3D3D, #333);
   background-repeat: repeat-x;

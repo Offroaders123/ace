@@ -1,4 +1,4 @@
-var Editor = require("../editor").Editor;
+import { Editor } from "../editor.js";
 
 require("../config").defineOptions(Editor.prototype, "editor", {
     enableLinking: {
@@ -15,7 +15,7 @@ require("../config").defineOptions(Editor.prototype, "editor", {
     }
 });
 
-exports.previousLinkingHover = false;
+export let previousLinkingHover = false;
 
 function onMouseMove(e) {
     var editor = e.editor;
@@ -27,14 +27,14 @@ function onMouseMove(e) {
         var session = editor.session;
         var token = session.getTokenAt(docPos.row, docPos.column);
 
-        if (exports.previousLinkingHover && exports.previousLinkingHover != token) {
+        if (previousLinkingHover && previousLinkingHover != token) {
             editor._emit("linkHoverOut");
         }
         editor._emit("linkHover", {position: docPos, token: token});
-        exports.previousLinkingHover = token;
-    } else if (exports.previousLinkingHover) {
+        previousLinkingHover = token;
+    } else if (previousLinkingHover) {
         editor._emit("linkHoverOut");
-        exports.previousLinkingHover = false;
+        previousLinkingHover = false;
     }
 }
 

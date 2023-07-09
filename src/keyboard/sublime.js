@@ -1,6 +1,4 @@
-"use strict";
-
-var HashHandler = require("../keyboard/hash_handler").HashHandler;
+import { HashHandler } from "../keyboard/hash_handler.js";
 
 function moveBySubWords(editor, direction, extend) {
     var selection = editor.selection;
@@ -52,9 +50,9 @@ function moveBySubWords(editor, direction, extend) {
     }
 }
 
-exports.handler = new HashHandler();
+export const handler = new HashHandler();
  
-exports.handler.addCommands([{
+handler.addCommands([{
     name: "find_all_under",
     exec: function(editor) {
         if (editor.selection.isEmpty())
@@ -412,8 +410,8 @@ exports.handler.addCommands([{
 }
 
 ].forEach(function(binding) {
-    var command = exports.handler.commands[binding.name];
+    var command = handler.commands[binding.name];
     if (command)
         command.bindKey = binding.bindKey;
-    exports.handler.bindKey(binding.bindKey, command || binding.name);
+    handler.bindKey(binding.bindKey, command || binding.name);
 });

@@ -10,8 +10,7 @@
  *  ☭ Hial Atropa!! ☭
  */
 
-    "use strict";
-    var Editor = require("../editor").Editor;
+    import { Editor } from "../editor.js";
     /**
      * Generates a menu which displays the keyboard shortcuts.
      * @author <a href="mailto:matthewkastor@gmail.com">
@@ -37,7 +36,7 @@
             overlayPage(editor, el);
         }
     }
-    module.exports.init = function(editor) {
+    export function init(editor) {
         Editor.prototype.showKeyboardShortcuts = function() {
             showKeyboardShortcuts(this);
         };

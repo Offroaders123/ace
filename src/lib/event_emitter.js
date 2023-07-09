@@ -1,11 +1,13 @@
-"use strict";
+class stopPropagation {
+    constructor() { this.propagationStopped = true; }
+}
+class preventDefault {
+    constructor() { this.defaultPrevented = true; }
+}
 
-var EventEmitter = {};
-var stopPropagation = function() { this.propagationStopped = true; };
-var preventDefault = function() { this.defaultPrevented = true; };
+export class EventEmitter {
 
-EventEmitter._emit =
-EventEmitter._dispatchEvent = function(eventName, e) {
+static _dispatchEvent = function(eventName, e) {
     this._eventRegistry || (this._eventRegistry = {});
     this._defaultHandlers || (this._defaultHandlers = {});
 
@@ -34,9 +36,9 @@ EventEmitter._dispatchEvent = function(eventName, e) {
     if (defaultHandler && !e.defaultPrevented)
         return defaultHandler(e, this);
 };
+static _emit = this._dispatchEvent;
 
-
-EventEmitter._signal = function(eventName, e) {
+static _signal = function(eventName, e) {
     var listeners = (this._eventRegistry || {})[eventName];
     if (!listeners)
         return;
@@ -45,7 +47,7 @@ EventEmitter._signal = function(eventName, e) {
         listeners[i](e, this);
 };
 
-EventEmitter.once = function(eventName, callback) {
+static once = function(eventName, callback) {
     var _self = this;
     this.on(eventName, function newCallback() {
         _self.off(eventName, newCallback);
@@ -60,7 +62,7 @@ EventEmitter.once = function(eventName, callback) {
 };
 
 
-EventEmitter.setDefaultHandler = function(eventName, callback) {
+static setDefaultHandler = function(eventName, callback) {
     var handlers = this._defaultHandlers;
     if (!handlers)
         handlers = this._defaultHandlers = {_disabled_: {}};
@@ -77,7 +79,7 @@ EventEmitter.setDefaultHandler = function(eventName, callback) {
     }
     handlers[eventName] = callback;
 };
-EventEmitter.removeDefaultHandler = function(eventName, callback) {
+static removeDefaultHandler = function(eventName, callback) {
     var handlers = this._defaultHandlers;
     if (!handlers)
         return;
@@ -93,8 +95,7 @@ EventEmitter.removeDefaultHandler = function(eventName, callback) {
     }
 };
 
-EventEmitter.on =
-EventEmitter.addEventListener = function(eventName, callback, capturing) {
+static addEventListener = function(eventName, callback, capturing) {
     this._eventRegistry = this._eventRegistry || {};
 
     var listeners = this._eventRegistry[eventName];
@@ -105,10 +106,9 @@ EventEmitter.addEventListener = function(eventName, callback, capturing) {
         listeners[capturing ? "unshift" : "push"](callback);
     return callback;
 };
+static on = this.addEventListener;
 
-EventEmitter.off =
-EventEmitter.removeListener =
-EventEmitter.removeEventListener = function(eventName, callback) {
+static removeEventListener = function(eventName, callback) {
     this._eventRegistry = this._eventRegistry || {};
 
     var listeners = this._eventRegistry[eventName];
@@ -119,11 +119,12 @@ EventEmitter.removeEventListener = function(eventName, callback) {
     if (index !== -1)
         listeners.splice(index, 1);
 };
+static off = this.removeEventListener;
+static removeListener = this.removeEventListener;
 
-EventEmitter.removeAllListeners = function(eventName) {
+static removeAllListeners = function(eventName) {
     if (!eventName) this._eventRegistry = this._defaultHandlers = undefined;
     if (this._eventRegistry) this._eventRegistry[eventName] = undefined;
     if (this._defaultHandlers) this._defaultHandlers[eventName] = undefined;
 };
-
-exports.EventEmitter = EventEmitter;
+}

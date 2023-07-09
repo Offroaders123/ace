@@ -1,15 +1,15 @@
-"use strict";
+import { inherits } from "../lib/oop.js";
+import { Mode as TextMode } from "./text.js";
+import { AdaHighlightRules } from "./ada_highlight_rules.js";
+import { Range } from "../range.js";
 
-var oop = require("../lib/oop");
-var TextMode = require("./text").Mode;
-var AdaHighlightRules = require("./ada_highlight_rules").AdaHighlightRules;
-var Range = require("../range").Range;
-
-var Mode = function() {
+export class Mode {
+    constructor() {
     this.HighlightRules = AdaHighlightRules;
     this.$behaviour = this.$defaultBehaviour;
-};
-oop.inherits(Mode, TextMode);
+    }
+}
+inherits(Mode, TextMode);
 
 (function() {
 
@@ -67,5 +67,3 @@ oop.inherits(Mode, TextMode);
 
     this.$id = "ace/mode/ada";
 }).call(Mode.prototype);
-
-exports.Mode = Mode;

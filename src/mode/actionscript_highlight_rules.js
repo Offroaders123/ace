@@ -4,12 +4,18 @@
  * fileTypes                                                                            *
  ****************************************************************************************/
 
-"use strict";
+import { inherits } from "../lib/oop.js";
+import { TextHighlightRules } from "./text_highlight_rules.js";
 
-var oop = require("../lib/oop");
-var TextHighlightRules = require("./text_highlight_rules").TextHighlightRules;
+export class ActionScriptHighlightRules {
+  static metaData = {
+    fileTypes: [ 'as' ],
+    keyEquivalent: '^~A',
+    name: 'ActionScript',
+    scopeName: 'source.actionscript.2'
+  };
 
-var ActionScriptHighlightRules = function() {
+  constructor() {
     // regexp must not have capturing parentheses. Use (?:) instead.
     // regexps are ordered -> the first match is used
 
@@ -96,14 +102,7 @@ var ActionScriptHighlightRules = function() {
            regex: '\\b(class)(\\s+)([a-zA-Z_](?:\\w|\\.)*)(?:(\\s+)(extends)(\\s+)([a-zA-Z_](?:\\w|\\.)*))?' } ] };
     
     this.normalizeRules();
+  }
 };
 
-ActionScriptHighlightRules.metaData = { fileTypes: [ 'as' ],
-      keyEquivalent: '^~A',
-      name: 'ActionScript',
-      scopeName: 'source.actionscript.2' };
-
-
-oop.inherits(ActionScriptHighlightRules, TextHighlightRules);
-
-exports.ActionScriptHighlightRules = ActionScriptHighlightRules;
+inherits(ActionScriptHighlightRules, TextHighlightRules);

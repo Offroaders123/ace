@@ -1,18 +1,16 @@
-"use strict";
+import { Range } from "../range.js";
+import { FoldLine } from "./fold_line.js";
+import { Fold } from "./fold.js";
+import { TokenIterator } from "../token_iterator.js";
+import { MouseEvent } from "../mouse/mouse_event.js";
 
-var Range = require("../range").Range;
-var FoldLine = require("./fold_line").FoldLine;
-var Fold = require("./fold").Fold;
-var TokenIterator = require("../token_iterator").TokenIterator;
-var MouseEvent = require("../mouse/mouse_event").MouseEvent;
-
-function Folding() {
+export class Folding {
     /*
      * Looks up a fold at a given row/column. Possible values for side:
      *   -1: ignore a fold if fold.start = row/column
      *   +1: ignore a fold if fold.end = row/column
      */
-    this.getFoldAt = function(row, column, side) {
+    getFoldAt(row, column, side) {
         var foldLine = this.getFoldLine(row);
         if (!foldLine)
             return null;
@@ -35,7 +33,7 @@ function Folding() {
      * Returns all folds in the given range. Note, that this will return folds
      *
      */
-    this.getFoldsInRange = function(range) {
+    getFoldsInRange(range) {
         var start = range.start;
         var end = range.end;
         var foldLines = this.$foldData;
@@ -79,7 +77,7 @@ function Folding() {
         return foundFolds;
     };
 
-    this.getFoldsInRangeList = function(ranges) {
+    getFoldsInRangeList(ranges) {
         if (Array.isArray(ranges)) {
             var folds = [];
             ranges.forEach(function(range) {
@@ -94,7 +92,7 @@ function Folding() {
     /*
      * Returns all folds in the document
      */
-    this.getAllFolds = function() {
+    getAllFolds() {
         var folds = [];
         var foldLines = this.$foldData;
         
@@ -122,7 +120,7 @@ function Folding() {
      *  foo<fold>bar<fold>wol|rd -trim=+1> "rld"
      *  fo|o<fold>bar<fold>wolrd -trim=00> "foo"
      */
-    this.getFoldStringAt = function(row, column, trim, foldLine) {
+    getFoldStringAt(row, column, trim, foldLine) {
         foldLine = foldLine || this.getFoldLine(row);
         if (!foldLine)
             return null;
@@ -157,7 +155,7 @@ function Folding() {
             return str;
     };
 
-    this.getFoldLine = function(docRow, startFoldLine) {
+    getFoldLine(docRow, startFoldLine) {
         var foldData = this.$foldData;
         var i = 0;
         if (startFoldLine)
@@ -176,7 +174,7 @@ function Folding() {
     };
 
     // returns the fold which starts after or contains docRow
-    this.getNextFoldLine = function(docRow, startFoldLine) {
+    getNextFoldLine(docRow, startFoldLine) {
         var foldData = this.$foldData;
         var i = 0;
         if (startFoldLine)
@@ -192,7 +190,7 @@ function Folding() {
         return null;
     };
 
-    this.getFoldedRowCount = function(first, last) {
+    getFoldedRowCount(first, last) {
         var foldData = this.$foldData, rowCount = last-first+1;
         for (var i = 0; i < foldData.length; i++) {
             var foldLine = foldData[i],
@@ -216,7 +214,7 @@ function Folding() {
         return rowCount;
     };
 
-    this.$addFoldLine = function(foldLine) {
+    $addFoldLine(foldLine) {
         this.$foldData.push(foldLine);
         this.$foldData.sort(function(a, b) {
             return a.start.row - b.start.row;
@@ -231,7 +229,7 @@ function Folding() {
      *      The new created Fold object or an existing fold object in case the
      *      passed in range fits an existing fold exactly.
      */
-    this.addFold = function(placeholder, range) {
+    addFold(placeholder, range) {
         var foldData = this.$foldData;
         var added = false;
         var fold;
@@ -312,13 +310,13 @@ function Folding() {
         return fold;
     };
 
-    this.addFolds = function(folds) {
+    addFolds(folds) {
         folds.forEach(function(fold) {
             this.addFold(fold);
         }, this);
     };
 
-    this.removeFold = function(fold) {
+    removeFold(fold) {
         var foldLine = fold.foldLine;
         var startRow = foldLine.start.row;
         var endRow = foldLine.end.row;
@@ -371,7 +369,7 @@ function Folding() {
         this._signal("changeFold", { data: fold, action: "remove" });
     };
 
-    this.removeFolds = function(folds) {
+    removeFolds(folds) {
         // We need to clone the folds array passed in as it might be the folds
         // array of a fold line and as we call this.removeFold(fold), folds
         // are removed from folds and changes the current index.
@@ -386,7 +384,7 @@ function Folding() {
         this.$modified = true;
     };
 
-    this.expandFold = function(fold) {
+    expandFold(fold) {
         this.removeFold(fold);
         fold.subFolds.forEach(function(subFold) {
             fold.restoreRange(subFold);
@@ -398,13 +396,13 @@ function Folding() {
         fold.subFolds = [];
     };
 
-    this.expandFolds = function(folds) {
+    expandFolds(folds) {
         folds.forEach(function(fold) {
             this.expandFold(fold);
         }, this);
     };
 
-    this.unfold = function(location, expandInner) {
+    unfold(location, expandInner) {
         var range, folds;
         if (location == null) {
             range = new Range(0, 0, this.getLength(), 0);
@@ -449,21 +447,21 @@ function Folding() {
      * Checks if a given documentRow is folded. This is true if there are some
      * folded parts such that some parts of the line is still visible.
      **/
-    this.isRowFolded = function(docRow, startFoldRow) {
+    isRowFolded(docRow, startFoldRow) {
         return !!this.getFoldLine(docRow, startFoldRow);
     };
 
-    this.getRowFoldEnd = function(docRow, startFoldRow) {
+    getRowFoldEnd(docRow, startFoldRow) {
         var foldLine = this.getFoldLine(docRow, startFoldRow);
         return foldLine ? foldLine.end.row : docRow;
     };
 
-    this.getRowFoldStart = function(docRow, startFoldRow) {
+    getRowFoldStart(docRow, startFoldRow) {
         var foldLine = this.getFoldLine(docRow, startFoldRow);
         return foldLine ? foldLine.start.row : docRow;
     };
 
-    this.getFoldDisplayLine = function(foldLine, endRow, endColumn, startRow, startColumn) {
+    getFoldDisplayLine(foldLine, endRow, endColumn, startRow, startColumn) {
         if (startRow == null)
             startRow = foldLine.start.row;
         if (startColumn == null)
@@ -496,7 +494,7 @@ function Folding() {
         return textLine;
     };
 
-    this.getDisplayLine = function(row, endColumn, startRow, startColumn) {
+    getDisplayLine(row, endColumn, startRow, startColumn) {
         var foldLine = this.getFoldLine(row);
 
         if (!foldLine) {
@@ -509,7 +507,7 @@ function Folding() {
         }
     };
 
-    this.$cloneFoldData = function() {
+    $cloneFoldData() {
         var fd = [];
         fd = this.$foldData.map(function(foldLine) {
             var folds = foldLine.folds.map(function(fold) {
@@ -521,7 +519,7 @@ function Folding() {
         return fd;
     };
 
-    this.toggleFold = function(tryToUnfold) {
+    toggleFold(tryToUnfold) {
         var selection = this.selection;
         var range = selection.getRange();
         var fold;
@@ -581,7 +579,7 @@ function Folding() {
         this.addFold(placeholder, range);
     };
 
-    this.getCommentFoldRange = function(row, column, dir) {
+    getCommentFoldRange(row, column, dir) {
         var iterator = new TokenIterator(this, row, column);
         var token = iterator.getCurrentToken();
         var type = token && token.type;
@@ -628,7 +626,7 @@ function Folding() {
         }
     };
 
-    this.foldAll = function(startRow, endRow, depth, test) {
+    foldAll(startRow, endRow, depth, test) {
         if (depth == undefined)
             depth = 100000; // JSON.stringify doesn't hanle Infinity
         var foldWidgets = this.foldWidgets;
@@ -657,13 +655,13 @@ function Folding() {
         }
     };
     
-    this.foldToLevel = function(level) {
+    foldToLevel(level) {
         this.foldAll();
         while (level-- > 0)
             this.unfold(null, false);
     };
     
-    this.foldAllComments = function() {
+    foldAllComments() {
         var session = this;
         this.foldAll(null, null, null, function(row) {
             var tokens = session.getTokens(row);
@@ -679,13 +677,13 @@ function Folding() {
     };
     
     // structured folding
-    this.$foldStyles = {
+    $foldStyles = {
         "manual": 1,
         "markbegin": 1,
         "markbeginend": 1
     };
-    this.$foldStyle = "markbegin";
-    this.setFoldStyle = function(style) {
+    $foldStyle = "markbegin";
+    setFoldStyle(style) {
         if (!this.$foldStyles[style])
             throw new Error("invalid fold style: " + style + "[" + Object.keys(this.$foldStyles).join(", ") + "]");
         
@@ -703,7 +701,7 @@ function Folding() {
         this.$setFolding(mode);
     };
 
-    this.$setFolding = function(foldMode) {
+    $setFolding(foldMode) {
         if (this.$foldMode == foldMode)
             return;
             
@@ -728,7 +726,7 @@ function Folding() {
         this.on('tokenizerUpdate', this.$tokenizerUpdateFoldWidgets);
     };
 
-    this.getParentFoldRangeData = function (row, ignoreCurrent) {
+    getParentFoldRangeData(row, ignoreCurrent) {
         var fw = this.foldWidgets;
         if (!fw || (ignoreCurrent && fw[row]))
             return {};
@@ -755,7 +753,7 @@ function Folding() {
         };
     };
 
-    this.onFoldWidgetClick = function(row, e) {
+    onFoldWidgetClick(row, e) {
         if (e instanceof MouseEvent)
             e = e.domEvent;
 
@@ -773,7 +771,7 @@ function Folding() {
         }
     };
     
-    this.$toggleFoldWidget = function(row, options) {
+    $toggleFoldWidget(row, options) {
         if (!this.getFoldWidget)
             return;
         var type = this.getFoldWidget(row);
@@ -821,7 +819,7 @@ function Folding() {
     
     
     
-    this.toggleFoldWidget = function(toggleParent) {
+    toggleFoldWidget(toggleParent) {
         var row = this.selection.getCursor().row;
         row = this.getRowFoldStart(row);
         var range = this.$toggleFoldWidget(row, {});
@@ -844,7 +842,7 @@ function Folding() {
         }
     };
 
-    this.updateFoldWidgets = function(delta) {
+    updateFoldWidgets(delta) {
         var firstRow = delta.start.row;
         var len = delta.end.row - firstRow;
 
@@ -858,7 +856,7 @@ function Folding() {
             this.foldWidgets.splice.apply(this.foldWidgets, args);
         }
     };
-    this.tokenizerUpdateFoldWidgets = function(e) {
+    tokenizerUpdateFoldWidgets(e) {
         var rows = e.data;
         if (rows.first != rows.last) {
             if (this.foldWidgets.length > rows.first)
@@ -866,5 +864,3 @@ function Folding() {
         }
     };
 }
-
-exports.Folding = Folding;

@@ -1,9 +1,7 @@
-"use strict";
-
 /**
  * This object maintains the undo stack for an [[EditSession `EditSession`]].
  **/
-class UndoManager {
+export class UndoManager {
     
     /**
      * Resets the current undo state and creates a new `UndoManager`.
@@ -561,4 +559,3 @@ function rebaseRedoStack(redoStack, deltaSets) {
         }
     }
 }
-exports.UndoManager = UndoManager;

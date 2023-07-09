@@ -1,11 +1,9 @@
-"use strict";
+import { implement } from "./lib/oop.js";
+import { importCssString, createElement } from "./lib/dom.js";
+import { addMultiMouseDownListener, getButton, capture, preventDefault } from "./lib/event.js";
+import { EventEmitter } from "./lib/event_emitter.js";
 
-var oop = require("./lib/oop");
-var dom = require("./lib/dom");
-var event = require("./lib/event");
-var EventEmitter = require("./lib/event_emitter").EventEmitter;
-
-dom.importCssString(`.ace_editor>.ace_sb-v div, .ace_editor>.ace_sb-h div{
+importCssString(`.ace_editor>.ace_sb-v div, .ace_editor>.ace_sb-h div{
   position: absolute;
   background: rgba(128, 128, 128, 0.6);
   -moz-box-sizing: border-box;
@@ -55,9 +53,9 @@ class ScrollBar {
      * @param {string} classSuffix
      **/
     constructor(parent, classSuffix) {
-        this.element = dom.createElement("div");
+        this.element = createElement("div");
         this.element.className = "ace_sb" + classSuffix;
-        this.inner = dom.createElement("div");
+        this.inner = createElement("div");
         this.inner.className = "";
         this.element.appendChild(this.inner);
         this.VScrollWidth = 12;
@@ -67,7 +65,7 @@ class ScrollBar {
         this.setVisible(false);
         this.skipEvent = false;
 
-        event.addMultiMouseDownListener(this.element, [500, 300, 300], this, "onMouseDown");
+        addMultiMouseDownListener(this.element, [500, 300, 300], this, "onMouseDown");
     }
 
     setVisible(isVisible) {
@@ -77,7 +75,7 @@ class ScrollBar {
     }
 }
 
-oop.implement(ScrollBar.prototype, EventEmitter);
+implement(ScrollBar.prototype, EventEmitter);
 /**
  * Represents a vertical scroll bar.
  * @class VScrollBar
@@ -90,7 +88,7 @@ oop.implement(ScrollBar.prototype, EventEmitter);
  *
  * @constructor
  **/
-class VScrollBar extends ScrollBar {
+export class VScrollBar extends ScrollBar {
     
     constructor(parent, renderer) {
         super(parent, '-v');
@@ -109,7 +107,7 @@ class VScrollBar extends ScrollBar {
     onMouseDown(eType, e) {
         if (eType !== "mousedown") return;
 
-        if (event.getButton(e) !== 0 || e.detail === 2) {
+        if (getButton(e) !== 0 || e.detail === 2) {
             return;
         }
 
@@ -134,13 +132,13 @@ class VScrollBar extends ScrollBar {
                 self._emit("scroll", {data: scrollTop});
             };
 
-            event.capture(this.inner, onMouseMove, onMouseUp);
+            capture(this.inner, onMouseMove, onMouseUp);
             var timerId = setInterval(onScrollInterval, 20);
-            return event.preventDefault(e);
+            return preventDefault(e);
         }
         var top = e.clientY - this.element.getBoundingClientRect().top - this.thumbHeight / 2;
         this._emit("scroll", {data: this.scrollTopFromThumbTop(top)});
-        return event.preventDefault(e);
+        return preventDefault(e);
     }
 
     getHeight() {
@@ -224,7 +222,7 @@ VScrollBar.prototype.setInnerHeight = VScrollBar.prototype.setScrollHeight;
 /**
  * Represents a horizontal scroll bar.
  **/
-class HScrollBar extends ScrollBar {
+export class HScrollBar extends ScrollBar {
     /**
      * Creates a new `HScrollBar`. `parent` is the owner of the scroll bar.
      * @param {Element} parent A DOM element
@@ -245,7 +243,7 @@ class HScrollBar extends ScrollBar {
     onMouseDown(eType, e) {
         if (eType !== "mousedown") return;
 
-        if (event.getButton(e) !== 0 || e.detail === 2) {
+        if (getButton(e) !== 0 || e.detail === 2) {
             return;
         }
 
@@ -271,14 +269,14 @@ class HScrollBar extends ScrollBar {
                 self._emit("scroll", {data: scrollLeft});
             };
 
-            event.capture(this.inner, onMouseMove, onMouseUp);
+            capture(this.inner, onMouseMove, onMouseUp);
             var timerId = setInterval(onScrollInterval, 20);
-            return event.preventDefault(e);
+            return preventDefault(e);
         }
 
         var left = e.clientX - this.element.getBoundingClientRect().left - this.thumbWidth / 2;
         this._emit("scroll", {data: this.scrollLeftFromThumbLeft(left)});
-        return event.preventDefault(e);
+        return preventDefault(e);
     }
 
     /**
@@ -356,9 +354,9 @@ class HScrollBar extends ScrollBar {
 
 HScrollBar.prototype.setInnerWidth = HScrollBar.prototype.setScrollWidth;
 
-exports.ScrollBar = VScrollBar; // backward compatibility
-exports.ScrollBarV = VScrollBar; // backward compatibility
-exports.ScrollBarH = HScrollBar; // backward compatibility
-
-exports.VScrollBar = VScrollBar;
-exports.HScrollBar = HScrollBar;
+// backward compatibility
+export {
+    VScrollBar as ScrollBar,
+    VScrollBar as ScrollBarV,
+    HScrollBar as ScrollBarH
+};

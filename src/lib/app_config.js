@@ -1,7 +1,5 @@
-"no use strict";
-
-var oop = require("./oop");
-var EventEmitter = require("./event_emitter").EventEmitter;
+import { implement } from "./oop.js";
+import { EventEmitter } from "./event_emitter.js";
 
 var optionsProvider = {
     setOptions: function(optList) {
@@ -66,11 +64,14 @@ function reportError(msg, data) {
 
 var messages;
 
-class AppConfig {
+export class AppConfig {
     constructor() {
         this.$defaultOptions = {};
     }
-    
+
+    warn = warn;
+    reportError = reportError;
+
     /*
      * option {name, value, initialValue, setterName, set, get }
      */
@@ -90,7 +91,7 @@ class AppConfig {
         });
 
         // implement option provider interface
-        oop.implement(obj, optionsProvider);
+        implement(obj, optionsProvider);
 
         return this;
     }
@@ -144,10 +145,6 @@ class AppConfig {
         return translated;
     }
 }
-AppConfig.prototype.warn = warn;
-AppConfig.prototype.reportError = reportError;
 
 // module loading
-oop.implement(AppConfig.prototype, EventEmitter);
-
-exports.AppConfig = AppConfig;
+implement(AppConfig.prototype, EventEmitter);

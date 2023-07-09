@@ -1,12 +1,10 @@
-"use strict";
+import { HashHandler } from "../keyboard/hash_handler.js";
+import { loadModule } from "../config.js";
 
-var HashHandler = require("../keyboard/hash_handler").HashHandler;
-var config = require("../config");
+export const handler = new HashHandler();
+handler.$id = "ace/keyboard/vscode";
 
-exports.handler = new HashHandler();
-exports.handler.$id = "ace/keyboard/vscode";
-
-exports.handler.addCommands([{
+handler.addCommands([{
     name: "toggleWordWrap",
     exec: function(editor) {
         var wrapUsed = editor.session.getUseWrapMode();
@@ -25,7 +23,7 @@ exports.handler.addCommands([{
     name: "replaceAll",
     exec: function (editor) {
         if (!editor.searchBox) {
-            config.loadModule("ace/ext/searchbox", function(e) {
+            loadModule("ace/ext/searchbox", function(e) {
                 e.Search(editor, true);
             });
         } else {
@@ -38,7 +36,7 @@ exports.handler.addCommands([{
     name: "replaceOne",
     exec: function (editor) {
         if (!editor.searchBox) {
-            config.loadModule("ace/ext/searchbox", function(e) {
+            loadModule("ace/ext/searchbox", function(e) {
                 e.Search(editor, true);
             });
         } else {
@@ -51,7 +49,7 @@ exports.handler.addCommands([{
     name: "selectAllMatches",
     exec: function (editor) {
         if (!editor.searchBox) {
-            config.loadModule("ace/ext/searchbox", function(e) {
+            loadModule("ace/ext/searchbox", function(e) {
                 e.Search(editor, false);
             });
         } else {
@@ -63,7 +61,7 @@ exports.handler.addCommands([{
 }, {
     name: "toggleFindCaseSensitive",
     exec: function (editor) {
-        config.loadModule("ace/ext/searchbox", function(e) {
+        loadModule("ace/ext/searchbox", function(e) {
             e.Search(editor, false);
             var sb = editor.searchBox;
             sb.caseSensitiveOption.checked = !sb.caseSensitiveOption.checked;
@@ -74,7 +72,7 @@ exports.handler.addCommands([{
 }, {
     name: "toggleFindInSelection",
     exec: function (editor) {
-        config.loadModule("ace/ext/searchbox", function(e) {
+        loadModule("ace/ext/searchbox", function(e) {
             e.Search(editor, false);
             var sb = editor.searchBox;
             sb.searchOption.checked = !sb.searchRange;
@@ -85,7 +83,7 @@ exports.handler.addCommands([{
 }, {
     name: "toggleFindRegex",
     exec: function (editor) {
-        config.loadModule("ace/ext/searchbox", function(e) {
+        loadModule("ace/ext/searchbox", function(e) {
             e.Search(editor, false);
             var sb = editor.searchBox;
             sb.regExpOption.checked = !sb.regExpOption.checked;
@@ -95,7 +93,7 @@ exports.handler.addCommands([{
 }, {
     name: "toggleFindWholeWord",
     exec: function (editor) {
-        config.loadModule("ace/ext/searchbox", function(e) {
+        loadModule("ace/ext/searchbox", function(e) {
             e.Search(editor, false);
             var sb = editor.searchBox;
             sb.wholeWordOption.checked = !sb.wholeWordOption.checked;
@@ -307,8 +305,8 @@ exports.handler.addCommands([{
     name: "cursorUndo"
 }*/
 ].forEach(function(binding) {
-    var command = exports.handler.commands[binding.name];
+    var command = handler.commands[binding.name];
     if (command)
         command.bindKey = binding.bindKey;
-    exports.handler.bindKey(binding.bindKey, command || binding.name);
+    handler.bindKey(binding.bindKey, command || binding.name);
 });

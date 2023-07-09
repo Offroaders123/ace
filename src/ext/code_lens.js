@@ -1,8 +1,7 @@
-"use strict";
-var LineWidgets = require("../line_widgets").LineWidgets;
-var event = require("../lib/event");
-var lang = require("../lib/lang");
-var dom = require("../lib/dom");
+import { LineWidgets } from "../line_widgets.js";
+import { addListener } from "../lib/event.js";
+import { delayedCall } from "../lib/lang.js";
+import { buildDom, createTextNode, importCssString } from "../lib/dom.js";
 
 function clearLensElements(renderer) {
     var textLayer = renderer.$textLayer;
@@ -49,7 +48,7 @@ function renderWidgets(changes, renderer) {
         var lensContainer = lensElements[index];
         if (!lensContainer) {
             lensContainer = lensElements[index]
-                = dom.buildDom(["div", {class: "ace_codeLens"}], renderer.container);
+                = buildDom(["div", {class: "ace_codeLens"}], renderer.container);
         }
         lensContainer.style.height = config.lineHeight + "px";
         index++;
@@ -57,8 +56,8 @@ function renderWidgets(changes, renderer) {
         for (var j = 0; j < lenses.length; j++) {
             var el = lensContainer.childNodes[2 * j];
             if (!el) {
-                if (j != 0) lensContainer.appendChild(dom.createTextNode("\xa0|\xa0"));
-                el = dom.buildDom(["a"], lensContainer);
+                if (j != 0) lensContainer.appendChild(createTextNode("\xa0|\xa0"));
+                el = buildDom(["a"], lensContainer);
             }
             el.textContent = lenses[j].title;
             el.lensCommand = lenses[j];
@@ -92,7 +91,7 @@ function clearCodeLensWidgets(session) {
     });
 }
 
-exports.setLenses = function(session, lenses) {
+export function setLenses(session, lenses) {
     var firstRow = Number.MAX_VALUE;
 
     clearCodeLensWidgets(session);
@@ -127,7 +126,7 @@ function attachToEditor(editor) {
             editor.execCommand(command.id, command.arguments);
             editor._emit("codeLensClick", e);
         };
-        event.addListener(editor.container, "click", editor.$codeLensClickHandler, editor);
+        addListener(editor.container,"click",editor.$codeLensClickHandler,editor);
     }
     editor.$updateLenses = function() {
         var session = editor.session;
@@ -157,7 +156,7 @@ function attachToEditor(editor) {
             var cursor = session.selection.cursor;
             var oldRow = session.documentToScreenRow(cursor);
             var scrollTop = session.getScrollTop();
-            var firstRow = exports.setLenses(session, lenses);
+            var firstRow = setLenses(session, lenses);
 
             var lastDelta = session.$undoManager && session.$undoManager.$lastDelta;
             if (lastDelta && lastDelta.action == "remove" && lastDelta.lines.length > 1)
@@ -172,7 +171,7 @@ function attachToEditor(editor) {
             session.setScrollTop(top);
         }
     };
-    var updateLenses = lang.delayedCall(editor.$updateLenses);
+    var updateLenses = delayedCall(editor.$updateLenses);
     editor.$updateLensesOnInput = function() {
         updateLenses.delay(250);
     };
@@ -186,17 +185,17 @@ function detachFromEditor(editor) {
         editor.container.removeEventListener("click", editor.$codeLensClickHandler);
 }
 
-exports.registerCodeLensProvider = function(editor, codeLensProvider) {
+export function registerCodeLensProvider(editor, codeLensProvider) {
     editor.setOption("enableCodeLens", true);
     editor.codeLensProviders.push(codeLensProvider);
     editor.$updateLensesOnInput();
 };
 
-exports.clear = function(session) {
-    exports.setLenses(session, null);
+export function clear(session) {
+    setLenses(session, null);
 };
 
-var Editor = require("../editor").Editor;
+import { Editor } from "../editor.js";
 require("../config").defineOptions(Editor.prototype, "editor", {
     enableCodeLens: {
         set: function(val) {
@@ -209,7 +208,7 @@ require("../config").defineOptions(Editor.prototype, "editor", {
     }
 });
 
-dom.importCssString(`
+importCssString(`
 .ace_codeLens {
     position: absolute;
     color: #aaa;

@@ -1,4 +1,4 @@
-module.exports = `# Closure loop
+export default `# Closure loop
 snippet forindo
 	for \${1:name} in \${2:array}
 		do (\$1) ->

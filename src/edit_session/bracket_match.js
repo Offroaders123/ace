@@ -1,12 +1,10 @@
-"use strict";
-
-var TokenIterator = require("../token_iterator").TokenIterator;
-var Range = require("../range").Range;
+import { TokenIterator } from "../token_iterator.js";
+import { Range } from "../range.js";
 
 
-function BracketMatch() {
+export class BracketMatch {
 
-    this.findMatchingBracket = function(position, chr) {
+    findMatchingBracket(position, chr) {
         if (position.column == 0) return null;
 
         var charBeforeCursor = chr || this.getLine(position.row).charAt(position.column-1);
@@ -22,7 +20,7 @@ function BracketMatch() {
             return this.$findOpeningBracket(match[2], position);
     };
     
-    this.getBracketRange = function(pos) {
+    getBracketRange(pos) {
         var line = this.getLine(pos.row);
         var before = true, range;
 
@@ -72,7 +70,7 @@ function BracketMatch() {
      * @param {boolean} [isBackwards]
      * @returns {null|Range[]}
      */
-    this.getMatchingBracketRanges = function(pos, isBackwards) {
+    getMatchingBracketRanges(pos, isBackwards) {
         var line = this.getLine(pos.row);
         var bracketsRegExp = /([\(\[\{])|([\)\]\}])/;
         var chr = !isBackwards && line.charAt(pos.column - 1);
@@ -99,7 +97,7 @@ function BracketMatch() {
         return [startRange, endRange];
     };
 
-    this.$brackets = {
+    $brackets = {
         ")": "(",
         "(": ")",
         "]": "[",
@@ -110,7 +108,7 @@ function BracketMatch() {
         ">": "<"
     };
 
-    this.$findOpeningBracket = function(bracket, position, typeRe) {
+    $findOpeningBracket(bracket, position, typeRe) {
         var openBracket = this.$brackets[bracket];
         var depth = 1;
 
@@ -168,7 +166,7 @@ function BracketMatch() {
         return null;
     };
 
-    this.$findClosingBracket = function(bracket, position, typeRe) {
+    $findClosingBracket(bracket, position, typeRe) {
         var closingBracket = this.$brackets[bracket];
         var depth = 1;
 
@@ -231,7 +229,7 @@ function BracketMatch() {
      * @param {Position} pos
      * @returns {{closeTag: Range, closeTagName: Range, openTag: Range, openTagName: Range} | undefined}
      */
-    this.getMatchingTags = function (pos) {
+    getMatchingTags(pos) {
         var iterator = new TokenIterator(this, pos.row, pos.column);
         var token = this.$findTagName(iterator);
         if (!token) return;
@@ -246,7 +244,7 @@ function BracketMatch() {
         }
     };
 
-    this.$findTagName = function (iterator) {
+    $findTagName(iterator) {
         var token = iterator.getCurrentToken();
         var found = false;
         var backward = false;
@@ -268,7 +266,7 @@ function BracketMatch() {
         return token;
     };
 
-    this.$findClosingTag = function (iterator, token) {
+    $findClosingTag(iterator, token) {
         var prevToken;
         var currentTag = token.value;
         var tag = token.value;
@@ -360,7 +358,7 @@ function BracketMatch() {
         }
     };
 
-    this.$findOpeningTag = function (iterator, token) {
+    $findOpeningTag(iterator, token) {
         var prevToken = iterator.getCurrentToken();
         var tag = token.value;
         var depth = 0;
@@ -451,4 +449,3 @@ function BracketMatch() {
         }
     };
 }
-exports.BracketMatch = BracketMatch;

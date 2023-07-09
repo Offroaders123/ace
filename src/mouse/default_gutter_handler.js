@@ -1,10 +1,9 @@
-"use strict";
-var dom = require("../lib/dom");
-var event = require("../lib/event");
-var Tooltip = require("../tooltip").Tooltip;
-var nls = require("../config").nls;
+import { hasCssClass } from "../lib/dom.js";
+import { addListener } from "../lib/event.js";
+import { Tooltip } from "../tooltip.js";
+import { nls } from "../config.js";
 
-function GutterHandler(mouseHandler) {
+export function GutterHandler(mouseHandler) {
     var editor = mouseHandler.editor;
     var gutter = editor.renderer.$gutterLayer;
     var tooltip = new GutterTooltip(editor);
@@ -86,7 +85,7 @@ function GutterHandler(mouseHandler) {
 
     mouseHandler.editor.setDefaultHandler("guttermousemove", function(e) {
         var target = e.domEvent.target || e.domEvent.srcElement;
-        if (dom.hasCssClass(target, "ace_fold-widget"))
+        if (hasCssClass(target, "ace_fold-widget"))
             return hideTooltip();
 
         if (tooltip.isOpen && mouseHandler.$tooltipFollowsMouse)
@@ -104,7 +103,7 @@ function GutterHandler(mouseHandler) {
         }, 50);
     });
 
-    event.addListener(editor.renderer.$gutter, "mouseout", function(e) {
+    addListener(editor.renderer.$gutter, "mouseout", function(e) {
         mouseEvent = null;
         if (!tooltip.isOpen || tooltipTimeout)
             return;
@@ -119,9 +118,7 @@ function GutterHandler(mouseHandler) {
     editor.on("input", hideTooltip);
 }
 
-exports.GutterHandler = GutterHandler;
-
-class GutterTooltip extends Tooltip {
+export class GutterTooltip extends Tooltip {
     constructor(editor) {
         super(editor.container);
         this.editor = editor;
@@ -237,5 +234,3 @@ class GutterTooltip extends Tooltip {
         return summary.join(", ");
     }
 }
-
-exports.GutterTooltip = GutterTooltip;

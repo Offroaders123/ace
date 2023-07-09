@@ -1,7 +1,6 @@
-"use strict";
-var dom = require("../lib/dom");
+import { hasCssClass } from "../lib/dom.js";
 
-class FoldHandler {
+export class FoldHandler {
     constructor(editor) {
 
         editor.on("click", function(e) {
@@ -20,8 +19,8 @@ class FoldHandler {
             }
 
             var target = e.domEvent && e.domEvent.target;
-            if (target && dom.hasCssClass(target, "ace_inline_button")) {
-                if (dom.hasCssClass(target, "ace_toggle_wrap")) {
+            if (target && hasCssClass(target, "ace_inline_button")) {
+                if (hasCssClass(target, "ace_toggle_wrap")) {
                     session.setOption("wrap", !session.getUseWrapMode());
                     editor.renderer.scrollCursorIntoView();
                 }
@@ -67,5 +66,3 @@ class FoldHandler {
         });
     }
 }
-
-exports.FoldHandler = FoldHandler;

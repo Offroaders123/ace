@@ -1,13 +1,11 @@
-"use strict";
-
-var lang = require("./lib/lang");
-var oop = require("./lib/oop");
-var Range = require("./range").Range;
+import { copyObject, getMatchOffsets, escapeRegExp } from "./lib/lang.js";
+import { mixin } from "./lib/oop.js";
+import { Range } from "./range.js";
 
 /**
  * A class designed to handle all sorts of text searches within a [[Document `Document`]].
  **/
-class Search {
+export class Search {
     /**
      * Creates a new `Search` object. The following search options are available:
      *
@@ -35,7 +33,7 @@ class Search {
      * @chainable
     **/
     set(options) {
-        oop.mixin(this.$options, options);
+        mixin(this.$options, options);
         return this;
     }
 
@@ -44,7 +42,7 @@ class Search {
      * @returns {Object}
     **/
     getOptions() {
-        return lang.copyObject(this.$options);
+        return copyObject(this.$options);
     }
     
     /**
@@ -131,7 +129,7 @@ class Search {
             }
         } else {
             for (var i = 0; i < lines.length; i++) {
-                var matches = lang.getMatchOffsets(lines[i], re);
+                var matches = getMatchOffsets(lines[i], re);
                 for (var j = 0; j < matches.length; j++) {
                     var match = matches[j];
                     ranges.push(new Range(i, match.offset, i, match.offset + match.length));
@@ -210,7 +208,7 @@ class Search {
             return options.re = false;
 
         if (!options.regExp)
-            needle = lang.escapeRegExp(needle);
+            needle = escapeRegExp(needle);
 
         if (options.wholeWord)
             needle = addWordBoundary(needle, options);
@@ -364,5 +362,3 @@ function addWordBoundary(needle, options) {
     return wordBoundary(needle[0]) + needle
         + wordBoundary(needle[needle.length - 1]);
 }
-
-exports.Search = Search;

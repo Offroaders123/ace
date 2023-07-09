@@ -1,13 +1,34 @@
-"use strict";
+import { implement } from "../lib/oop.js";
+import dom, { setStyle } from "../lib/dom.js";
+import { stringRepeat } from "../lib/lang.js";
+import { Lines } from "./lines.js";
+import { EventEmitter } from "../lib/event_emitter.js";
+import { nls } from "../config.js";
 
-var oop = require("../lib/oop");
-var dom = require("../lib/dom");
-var lang = require("../lib/lang");
-var Lines = require("./lines").Lines;
-var EventEmitter = require("../lib/event_emitter").EventEmitter;
-var nls = require("../config").nls;
-
-class Text {
+export class Text {
+    $textToken = {
+        "text": true,
+        "rparen": true,
+        "lparen": true
+    };
+    EOF_CHAR = "\xB6";
+    EOL_CHAR_LF = "\xAC";
+    EOL_CHAR_CRLF = "\xa4";
+    EOL_CHAR = this.EOL_CHAR_LF;
+    TAB_CHAR = "\u2014"; //"\u21E5";
+    SPACE_CHAR = "\xB7";
+    $padding = 0;
+    MAX_LINE_LENGTH = 10000;
+    showInvisibles = false;
+    showSpaces = false;
+    showTabs = false;
+    showEOL = false;
+    displayIndentGuides = true;
+    $highlightIndentGuides = true;
+    $tabStrings = [];
+    destroy = {};
+    onChangeTabSize = Text.prototype.$computeTabString;
+    
     constructor(parentEl) {
         this.dom = dom;
         this.element = this.dom.createElement("div");
@@ -100,10 +121,10 @@ class Text {
             if (this.showTabs) {
                 var span = this.dom.createElement("span");
                 span.className = "ace_invisible ace_invisible_tab";
-                span.textContent = lang.stringRepeat(this.TAB_CHAR, i);
+                span.textContent = stringRepeat(this.TAB_CHAR, i);
                 tabStr.push(span);
             } else {
-                tabStr.push(this.dom.createTextNode(lang.stringRepeat(" ", i), this.element));
+                tabStr.push(this.dom.createTextNode(stringRepeat(" ", i), this.element));
             }
         }
         if (this.displayIndentGuides) {
@@ -111,12 +132,12 @@ class Text {
             var className = "ace_indent-guide";
             var spaceClass = this.showSpaces ? " ace_invisible ace_invisible_space" : "";
             var spaceContent = this.showSpaces
-                ? lang.stringRepeat(this.SPACE_CHAR, this.tabSize)
-                : lang.stringRepeat(" ", this.tabSize);
+                ? stringRepeat(this.SPACE_CHAR, this.tabSize)
+                : stringRepeat(" ", this.tabSize);
 
             var tabClass = this.showTabs ? " ace_invisible ace_invisible_tab" : "";
             var tabContent = this.showTabs
-                ? lang.stringRepeat(this.TAB_CHAR, this.tabSize)
+                ? stringRepeat(this.TAB_CHAR, this.tabSize)
                 : spaceContent;
 
             var span = this.dom.createElement("span");
@@ -261,8 +282,8 @@ class Text {
 
             var lineEl = line.element;
             this.dom.removeChildren(lineEl);
-            dom.setStyle(lineEl.style, "height", this.$lines.computeLineHeight(row, config, this.session) + "px");
-            dom.setStyle(lineEl.style, "top", this.$lines.computeLineTop(row, config, this.session) + "px");
+            setStyle(lineEl.style, "height", this.$lines.computeLineHeight(row, config, this.session) + "px");
+            setStyle(lineEl.style, "top", this.$lines.computeLineTop(row, config, this.session) + "px");
 
             // Get the tokens per line as there might be some lines in between
             // beeing folded.
@@ -329,7 +350,7 @@ class Text {
                 if (self.showSpaces) {
                     var span = this.dom.createElement("span");
                     span.className = "ace_invisible ace_invisible_space";
-                    span.textContent = lang.stringRepeat(self.SPACE_CHAR, simpleSpace.length);
+                    span.textContent = stringRepeat(self.SPACE_CHAR, simpleSpace.length);
                     valueFragment.appendChild(span);
                 } else {
                     valueFragment.appendChild(this.com.createTextNode(simpleSpace, this.element));
@@ -337,7 +358,7 @@ class Text {
             } else if (controlCharacter) {
                 var span = this.dom.createElement("span");
                 span.className = "ace_invisible ace_invisible_space ace_invalid";
-                span.textContent = lang.stringRepeat(self.SPACE_CHAR, controlCharacter.length);
+                span.textContent = stringRepeat(self.SPACE_CHAR, controlCharacter.length);
                 valueFragment.appendChild(span);
             } else if (cjkSpace) {
                 // U+3000 is both invisible AND full-width, so must be handled uniquely
@@ -556,7 +577,7 @@ class Text {
                     lineEl = this.$createLineElement();
                     parent.appendChild(lineEl);
 
-                    lineEl.appendChild(this.dom.createTextNode(lang.stringRepeat("\xa0", splits.indent), this.element));
+                    lineEl.appendChild(this.dom.createTextNode(stringRepeat("\xa0", splits.indent), this.element));
 
                     split ++;
                     screenColumn = 0;
@@ -715,29 +736,4 @@ class Text {
     }
 }
 
-Text.prototype.$textToken = {
-    "text": true,
-    "rparen": true,
-    "lparen": true
-};
-Text.prototype.EOF_CHAR = "\xB6";
-Text.prototype.EOL_CHAR_LF = "\xAC";
-Text.prototype.EOL_CHAR_CRLF = "\xa4";
-Text.prototype.EOL_CHAR = Text.prototype.EOL_CHAR_LF;
-Text.prototype.TAB_CHAR = "\u2014"; //"\u21E5";
-Text.prototype.SPACE_CHAR = "\xB7";
-Text.prototype.$padding = 0;
-Text.prototype.MAX_LINE_LENGTH = 10000;
-Text.prototype.showInvisibles = false;
-Text.prototype.showSpaces = false;
-Text.prototype.showTabs = false;
-Text.prototype.showEOL = false;
-Text.prototype.displayIndentGuides = true;
-Text.prototype.$highlightIndentGuides = true;
-Text.prototype.$tabStrings = [];
-Text.prototype.destroy = {};
-Text.prototype.onChangeTabSize = Text.prototype.$computeTabString;
-
-oop.implement(Text.prototype, EventEmitter);
-
-exports.Text = Text;
+implement(Text.prototype, EventEmitter);

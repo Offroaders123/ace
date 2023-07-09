@@ -4,27 +4,28 @@
  * @class Ace
  **/
 
-"use strict";
 "include loader_build";
 
-var dom = require("./lib/dom");
+import { createElement } from "./lib/dom.js";
 
-var Range = require("./range").Range;
-var Editor = require("./editor").Editor;
-var EditSession = require("./edit_session").EditSession;
-var UndoManager = require("./undomanager").UndoManager;
-var Renderer = require("./virtual_renderer").VirtualRenderer;
+import { Range } from "./range.js";
+import { Editor } from "./editor.js";
+import { EditSession } from "./edit_session.js";
+import { UndoManager } from "./undomanager.js";
+import { VirtualRenderer } from "./virtual_renderer.js";
+
+export { Range, Editor, EditSession, UndoManager, VirtualRenderer };
 
 // The following require()s are for inclusion in the built ace file
-require("./worker/worker_client");
-require("./keyboard/hash_handler");
-require("./placeholder");
-require("./multi_select");
-require("./mode/folding/fold_mode");
-require("./theme/textmate");
-require("./ext/error_marker");
+import "./worker/worker_client.js";
+import "./keyboard/hash_handler.js";
+import "./placeholder.js";
+import "./multi_select.js";
+import "./mode/folding/fold_mode.js";
+import "./theme/textmate.js";
+import "./ext/error_marker.js";
 
-exports.config = require("./config");
+import config from "./config.js";
 
 
 /**
@@ -33,7 +34,7 @@ exports.config = require("./config");
  * @param {Object } options Options for the editor
  *
  **/
-exports.edit = function(el, options) {
+export function edit(el, options) {
     if (typeof el == "string") {
         var _id = el;
         el = document.getElementById(_id);
@@ -48,16 +49,16 @@ exports.edit = function(el, options) {
     if (el && /input|textarea/i.test(el.tagName)) {
         var oldNode = el;
         value = oldNode.value;
-        el = dom.createElement("pre");
+        el = createElement("pre");
         oldNode.parentNode.replaceChild(el, oldNode);
     } else if (el) {
         value = el.textContent;
         el.innerHTML = "";
     }
 
-    var doc = exports.createEditSession(value);
+    var doc = createEditSession(value);
 
-    var editor = new Editor(new Renderer(el), doc, options);
+    var editor = new Editor(new VirtualRenderer(el), doc, options);
 
     var env = {
         document: doc,
@@ -78,14 +79,9 @@ exports.edit = function(el, options) {
  * @param {TextMode} mode {:modeParam}
  *
  **/
-exports.createEditSession = function(text, mode) {
+export function createEditSession(text, mode) {
     var doc = new EditSession(text, mode);
     doc.setUndoManager(new UndoManager());
     return doc;
-};
-exports.Range = Range;
-exports.Editor = Editor;
-exports.EditSession = EditSession;
-exports.UndoManager = UndoManager;
-exports.VirtualRenderer = Renderer;
-exports.version = exports.config.version;
+}
+export const version = config.version;

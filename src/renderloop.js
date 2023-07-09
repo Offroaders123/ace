@@ -1,11 +1,9 @@
-"use strict";
-
-var event = require("./lib/event");
+import { blockIdle, nextFrame } from "./lib/event.js";
 
 /**
  * Batches changes (that force something to be redrawn) in the background.
  **/
-class RenderLoop {
+export class RenderLoop {
     
     constructor(onRender, win) {
         this.onRender = onRender;
@@ -19,7 +17,7 @@ class RenderLoop {
             var changes = _self.changes;
 
             if (changes) {
-                event.blockIdle(100);
+                blockIdle(100);
                 _self.changes = 0;
                 _self.onRender(changes);
             }
@@ -37,7 +35,7 @@ class RenderLoop {
     schedule(change) {
         this.changes = this.changes | change;
         if (this.changes && !this.pending) {
-            event.nextFrame(this._flush);
+            nextFrame(this._flush);
             this.pending = true;
         }
     }
@@ -49,5 +47,3 @@ class RenderLoop {
     }
     
 }
-
-exports.RenderLoop = RenderLoop;

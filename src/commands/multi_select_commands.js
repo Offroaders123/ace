@@ -1,5 +1,5 @@
 // commands to enter multiselect mode
-exports.defaultCommands = [{
+export const defaultCommands = [{
     name: "addCursorAbove",
     description: "Add cursor above",
     exec: function(editor) { editor.selectMoreLines(-1); },
@@ -87,7 +87,7 @@ exports.defaultCommands = [{
 }];
 
 // commands active only in multiselect mode
-exports.multiSelectCommands = [{
+export const multiSelectCommands = [{
     name: "singleSelection",
     description: "Single selection",
     bindKey: "esc",
@@ -97,5 +97,5 @@ exports.multiSelectCommands = [{
     isAvailable: function(editor) {return editor && editor.inMultiSelectMode;}
 }];
 
-var HashHandler = require("../keyboard/hash_handler").HashHandler;
-exports.keyboardHandler = new HashHandler(exports.multiSelectCommands);
+import { HashHandler } from "../keyboard/hash_handler.js";
+export const keyboardHandler = new HashHandler(multiSelectCommands);

@@ -1,13 +1,12 @@
-"use strict";
-var dom = require("./lib/dom");
-var oop = require("./lib/oop");
-var EventEmitter = require("./lib/event_emitter").EventEmitter;
-var lang = require("./lib/lang");
-var Range = require("./range").Range;
-var RangeList = require("./range_list").RangeList;
-var HashHandler = require("./keyboard/hash_handler").HashHandler;
-var Tokenizer = require("./tokenizer").Tokenizer;
-var clipboard = require("./clipboard");
+import { importCssString } from "./lib/dom.js";
+import { implement } from "./lib/oop.js";
+import { EventEmitter } from "./lib/event_emitter.js";
+import { escapeRegExp, delayedCall } from "./lib/lang.js";
+import { Range } from "./range.js";
+import { RangeList } from "./range_list.js";
+import { HashHandler } from "./keyboard/hash_handler.js";
+import { Tokenizer } from "./tokenizer.js";
+import { getText } from "./clipboard.js";
 
 var VARIABLES = {
     CURRENT_WORD: function(editor) {
@@ -38,7 +37,7 @@ var VARIABLES = {
         return editor.session.getTabSize();
     },
     CLIPBOARD: function(editor) {
-        return clipboard.getText && clipboard.getText();
+        return getText && getText();
     },
     // filenames
     FILENAME: function(editor) {
@@ -533,7 +532,7 @@ class SnippetManager {
             if (s.tabTrigger && !s.trigger) {
                 if (!s.guard && /^\w/.test(s.tabTrigger))
                     s.guard = "\\b";
-                s.trigger = lang.escapeRegExp(s.tabTrigger);
+                s.trigger = escapeRegExp(s.tabTrigger);
             }
             
             if (!s.trigger && !s.guard && !s.endTrigger && !s.endGuard)
@@ -622,7 +621,7 @@ class SnippetManager {
     }
 }
 
-oop.implement(SnippetManager.prototype, EventEmitter);
+implement(SnippetManager.prototype, EventEmitter);
 
 var processSnippetText = function(editor, snippetText, options={}) {
     var cursor = editor.getCursorPosition();
@@ -758,7 +757,7 @@ class TabstopManager {
             return editor.tabstopManager;
         editor.tabstopManager = this;
         this.$onChange = this.onChange.bind(this);
-        this.$onChangeSelection = lang.delayedCall(this.onChangeSelection.bind(this)).schedule;
+        this.$onChangeSelection = delayedCall(this.onChangeSelection.bind(this)).schedule;
         this.$onChangeSession = this.onChangeSession.bind(this);
         this.$onAfterExec = this.onAfterExec.bind(this);
         this.attach(editor);
@@ -829,7 +828,7 @@ class TabstopManager {
             if (!range.linked)
                 continue;
             var original = range.original;
-            var fmt = exports.snippetManager.tmStrFormat(text, original, this.editor);
+            var fmt = snippetManager.tmStrFormat(text, original, this.editor);
             session.replace(range, fmt);
         }
         this.$inChange = false;
@@ -990,7 +989,7 @@ class TabstopManager {
 TabstopManager.prototype.keyboardHandler = new HashHandler();
 TabstopManager.prototype.keyboardHandler.bindKeys({
     "Tab": function(editor) {
-        if (exports.snippetManager && exports.snippetManager.expandWithTab(editor))
+        if (snippetManager && snippetManager.expandWithTab(editor))
             return;
         editor.tabstopManager.tabNext(1);
         editor.renderer.scrollCursorIntoView();
@@ -1018,7 +1017,7 @@ var moveRelative = function(point, start) {
 };
 
 
-dom.importCssString(`
+importCssString(`
 .ace_snippet-marker {
     -moz-box-sizing: border-box;
     box-sizing: border-box;
@@ -1027,15 +1026,15 @@ dom.importCssString(`
     position: absolute;
 }`, "snippets.css", false);
 
-exports.snippetManager = new SnippetManager();
+export const snippetManager = new SnippetManager();
 
 
-var Editor = require("./editor").Editor;
+import { Editor } from "./editor.js";
 (function() {
     this.insertSnippet = function(content, options) {
-        return exports.snippetManager.insertSnippet(this, content, options);
+        return snippetManager.insertSnippet(this, content, options);
     };
     this.expandSnippet = function(options) {
-        return exports.snippetManager.expandWithTab(this, options);
+        return snippetManager.expandWithTab(this, options);
     };
 }).call(Editor.prototype);

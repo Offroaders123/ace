@@ -1,16 +1,16 @@
 "use strict";
 
-var oop = require("./lib/oop");
-var lang = require("./lib/lang");
-var BidiHandler = require("./bidihandler").BidiHandler;
-var config = require("./config");
-var EventEmitter = require("./lib/event_emitter").EventEmitter;
-var Selection = require("./selection").Selection;
-var TextMode = require("./mode/text").Mode;
-var Range = require("./range").Range;
-var Document = require("./document").Document;
-var BackgroundTokenizer = require("./background_tokenizer").BackgroundTokenizer;
-var SearchHighlight = require("./search_highlight").SearchHighlight;
+import { implement } from "./lib/oop.js";
+import { delayedCall, stringRepeat } from "./lib/lang.js";
+import { BidiHandler } from "./bidihandler.js";
+import { resetOptions, _signal, loadModule, warn, $modes, defineOptions } from "./config.js";
+import { EventEmitter } from "./lib/event_emitter.js";
+import { Selection } from "./selection.js";
+import { Mode as TextMode } from "./mode/text.js";
+import { Range } from "./range.js";
+import { Document } from "./document.js";
+import { BackgroundTokenizer } from "./background_tokenizer.js";
+import { SearchHighlight } from "./search_highlight.js";
 
 //{ events
 /**
@@ -100,7 +100,7 @@ var SearchHighlight = require("./search_highlight").SearchHighlight;
  * `EditSession` can be attached to only one [[Document `Document`]]. Same `Document` can be attached to several `EditSession`s.
  **/
 
-class EditSession {
+export class EditSession {
     /**
      * Sets up a new `EditSession` and associates it with the given `Document` and `Mode`.
      * @param {Document | String} text [If `text` is a `Document`, it associates the `EditSession` with it. Otherwise, a new `Document` is created, with the initial text]{: #textParam}
@@ -138,9 +138,9 @@ class EditSession {
         this.selection = new Selection(this);
         this.$bidiHandler = new BidiHandler(this);
 
-        config.resetOptions(this);
+        resetOptions(this);
         this.setMode(mode);
-        config._signal("session", this);
+        _signal("session", this);
 
         this.destroyed = false;
     }
@@ -344,7 +344,7 @@ class EditSession {
                 self.$informUndoManager.cancel();
                 self.mergeUndoDeltas = false;
             };
-            this.$informUndoManager = lang.delayedCall(this.$syncInformUndoManager);
+            this.$informUndoManager = delayedCall(this.$syncInformUndoManager);
         } else {
             this.$syncInformUndoManager = function() {};
         }
@@ -370,7 +370,7 @@ class EditSession {
      **/
     getTabString() {
         if (this.getUseSoftTabs()) {
-            return lang.stringRepeat(" ", this.getTabSize());
+            return stringRepeat(" ", this.getTabSize());
         } else {
             return "\t";
         }
@@ -815,7 +815,7 @@ class EditSession {
         }
         // load on demand
         this.$modeId = path;
-        config.loadModule(["mode", path], function(m) {
+        loadModule(["mode", path], function(m) {
             if (this.$modeId !== path)
                 return cb && cb();
             if (this.$modes[path] && !options) {
@@ -886,7 +886,7 @@ class EditSession {
         try {
             this.$worker = this.$mode.createWorker(this);
         } catch (e) {
-            config.warn("Could not load worker", e);
+            warn("Could not load worker", e);
             this.$worker = null;
         }
     }
@@ -2314,7 +2314,7 @@ class EditSession {
 }
 
 EditSession.$uid = 0;
-EditSession.prototype.$modes = config.$modes;
+EditSession.prototype.$modes = $modes;
 /**
  * Returns the current [[Document `Document`]] as a string.
  * @method getValue
@@ -2353,7 +2353,7 @@ EditSession.prototype.$wrapLimitRange = {
 EditSession.prototype.lineWidgets = null;
 EditSession.prototype.isFullWidth = isFullWidth;
 
-oop.implement(EditSession.prototype, EventEmitter);
+implement(EditSession.prototype, EventEmitter);
 
 // "Tokens"
 var CHAR = 1,
@@ -2406,7 +2406,7 @@ require("./edit_session/folding").Folding.call(EditSession.prototype);
 require("./edit_session/bracket_match").BracketMatch.call(EditSession.prototype);
 
 
-config.defineOptions(EditSession.prototype, "session", {
+defineOptions(EditSession.prototype, "session", {
     wrap: {
         set: function(value) {
             if (!value || value == "off")
@@ -2514,5 +2514,3 @@ config.defineOptions(EditSession.prototype, "session", {
         handlesSet: true
     }
 });
-
-exports.EditSession = EditSession;

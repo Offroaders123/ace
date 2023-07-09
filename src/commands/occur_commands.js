@@ -1,8 +1,8 @@
-var config = require("../config"),
-    Occur = require("../occur").Occur;
+import config from "../config.js";
+import { Occur } from "../occur.js";
 
 // These commands can be installed in a normal command handler to start occur:
-var occurStartCommand = {
+export var occurStartCommand = {
     name: "occur",
     exec: function(editor, options) {
         var alreadyInOccur = !!editor.session.$occur;
@@ -35,13 +35,13 @@ var occurCommands = [{
     readOnly: true
 }];
 
-var HashHandler = require("../keyboard/hash_handler").HashHandler;
-var oop = require("../lib/oop");
+import { HashHandler } from "../keyboard/hash_handler.js";
+import { inherits } from "../lib/oop.js";
 
 
 function OccurKeyboardHandler() {}
 
-oop.inherits(OccurKeyboardHandler, HashHandler);
+inherits(OccurKeyboardHandler, HashHandler);
 
 (function() {
 
@@ -72,5 +72,3 @@ OccurKeyboardHandler.uninstallFrom = function(editor) {
     if (handler.isOccurHandler)
         editor.keyBinding.removeKeyboardHandler(handler);
 };
-
-exports.occurStartCommand = occurStartCommand;

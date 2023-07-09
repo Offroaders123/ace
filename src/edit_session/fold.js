@@ -1,11 +1,9 @@
-"use strict";
-
-var RangeList = require("../range_list").RangeList;
+import { RangeList } from "../range_list.js";
 
 /*
  * Simple fold-data struct.
  **/
-class Fold extends RangeList {
+export class Fold extends RangeList {
     constructor(range, placeholder) {
         super();
         this.foldLine = null;
@@ -18,6 +16,7 @@ class Fold extends RangeList {
         this.subFolds = this.ranges = [];
     }
     
+    /** @override */
     toString() {
         return '"' + this.placeholder + '" ' + this.range.toString();
     }
@@ -104,5 +103,3 @@ function restoreRange(range, anchor) {
     restorePoint(range.start, anchor);
     restorePoint(range.end, anchor);
 }
-
-exports.Fold = Fold;

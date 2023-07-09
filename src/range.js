@@ -1,13 +1,29 @@
-"use strict";
-var comparePoints = function(p1, p2) {
-    return p1.row - p2.row || p1.column - p2.column;
-};
 /**
  * This object is used in various places to indicate a region within the editor. To better visualize how this works, imagine a rectangle. Each quadrant of the rectangle is analogous to a range, as ranges contain a starting row and starting column, and an ending row, and ending column.
  * @class Range
  **/
 
-class Range {
+export class Range {
+    /**
+     * Creates and returns a new `Range` based on the `start` [[Point]] and `end` [[Point]] of the given parameters.
+     * @param {Point} start A starting point to use
+     * @param {Point} end An ending point to use
+     * @returns {Range}
+    **/
+    static fromPoints(start, end) {
+        return new Range(start.row, start.column, end.row, end.column);
+    }
+
+    /**
+     * Compares `p1` and `p2` [[Point]]'s, useful for sorting
+     * @param {Ace.Point} p1
+     * @param {Ace.Point} p2
+     * @returns {Number}
+     */
+    static comparePoints(p1, p2) {
+        return p1.row - p2.row || p1.column - p2.column;
+    }
+
     /**
      * Creates a new `Range` object with the given starting and ending rows and columns.
      * @param {Number} startRow The starting row
@@ -439,26 +455,3 @@ class Range {
     }
 
 }
-
-/**
- * Creates and returns a new `Range` based on the `start` [[Point]] and `end` [[Point]] of the given parameters.
- * @param {Point} start A starting point to use
- * @param {Point} end An ending point to use
- * @returns {Range}
-**/
-Range.fromPoints = function(start, end) {
-    return new Range(start.row, start.column, end.row, end.column);
-};
-Range.comparePoints = comparePoints;
-
-/**
- * Compares `p1` and `p2` [[Point]]'s, useful for sorting
- * @param {Ace.Point} p1
- * @param {Ace.Point} p2
- * @returns {Number}
- */
-Range.comparePoints = function(p1, p2) {
-    return p1.row - p2.row || p1.column - p2.column;
-};
-
-exports.Range = Range;

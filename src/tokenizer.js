@@ -1,6 +1,4 @@
-"use strict";
-
-var config = require("./config");
+import { reportError } from "./config.js";
 // tokenizing lines longer than this makes editor very slow
 var MAX_TOKEN_COUNT = 2000;
 /**
@@ -330,6 +328,7 @@ class Tokenizer {
     }
 }
 
-Tokenizer.prototype.reportError = config.reportError;
+Tokenizer.prototype.reportError = reportError;
 
-exports.Tokenizer = Tokenizer;
+const _Tokenizer = Tokenizer;
+export { _Tokenizer as Tokenizer };

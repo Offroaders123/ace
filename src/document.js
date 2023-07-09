@@ -1,16 +1,17 @@
-"use strict";
-
-var oop = require("./lib/oop");
-var applyDelta = require("./apply_delta").applyDelta;
-var EventEmitter = require("./lib/event_emitter").EventEmitter;
-var Range = require("./range").Range;
-var Anchor = require("./anchor").Anchor;
+import { implement } from "./lib/oop.js";
+import { applyDelta } from "./apply_delta.js";
+import { EventEmitter } from "./lib/event_emitter.js";
+import { Range } from "./range.js";
+import { Anchor } from "./anchor.js";
 
 /**
  * Contains the text of the document. Document can be attached to several [[EditSession `EditSession`]]s. 
  * At its core, `Document`s are just an array of strings, with each row in the document matching up to the array index.
  **/
-class Document {
+export class Document {
+    $autoNewLine = "";
+    $newLineMode = "auto";
+
     /**
      *
      * Creates a new `Document`. If `text` is included, the `Document` contains those strings; otherwise, it's empty.
@@ -646,9 +647,4 @@ class Document {
     }
 }
 
-Document.prototype.$autoNewLine = "";
-Document.prototype.$newLineMode = "auto";
-
-oop.implement(Document.prototype, EventEmitter);
-
-exports.Document = Document;
+implement(Document.prototype, EventEmitter);

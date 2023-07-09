@@ -1,10 +1,8 @@
-"use strict";
+import { implement } from "../lib/oop.js";
+import { MultiHashHandler } from "../keyboard/hash_handler.js";
+import { EventEmitter } from "../lib/event_emitter.js";
 
-var oop = require("../lib/oop");
-var MultiHashHandler = require("../keyboard/hash_handler").MultiHashHandler;
-var EventEmitter = require("../lib/event_emitter").EventEmitter;
-
-class CommandManager extends MultiHashHandler{
+export class CommandManager extends MultiHashHandler{
     /**
      * new CommandManager(platform, commands)
      * @param {String} platform Identifier for the platform; must be either `"mac"` or `"win"`
@@ -105,6 +103,4 @@ class CommandManager extends MultiHashHandler{
     }
 
 }
-oop.implement(CommandManager.prototype, EventEmitter);
-
-exports.CommandManager = CommandManager;
+implement(CommandManager.prototype, EventEmitter);

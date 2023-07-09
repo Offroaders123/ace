@@ -1,29 +1,28 @@
 // [WIP]
 
-"use strict";
-var TokenIterator = require("../token_iterator").TokenIterator;
+import { TokenIterator } from "../token_iterator.js";
 
 function is(token, type) {
     return token.type.lastIndexOf(type + ".xml") > -1;
 }
 
 // do not indent after singleton tags or <html>
-exports.singletonTags = ["area", "base", "br", "col", "command", "embed", "hr", "html", "img", "input", "keygen", "link", "meta", "param", "source", "track", "wbr"];
+export const singletonTags = ["area", "base", "br", "col", "command", "embed", "hr", "html", "img", "input", "keygen", "link", "meta", "param", "source", "track", "wbr"];
 
 // insert a line break after block level tags
-exports.blockTags = ["article", "aside", "blockquote", "body", "div", "dl", "fieldset", "footer", "form", "head", "header", "html", "nav", "ol", "p", "script", "section", "style", "table", "tbody", "tfoot", "thead", "ul"];
+export const blockTags = ["article", "aside", "blockquote", "body", "div", "dl", "fieldset", "footer", "form", "head", "header", "html", "nav", "ol", "p", "script", "section", "style", "table", "tbody", "tfoot", "thead", "ul"];
 
-exports.formatOptions = {
+export const formatOptions = {
     lineBreaksAfterCommasInCurlyBlock: true
 };
 
-exports.beautify = function(session) {
+export function beautify(session) {
     var iterator = new TokenIterator(session, 0, 0);
     var token = iterator.getCurrentToken();
     var tabString = session.getTabString();
-    var singletonTags = exports.singletonTags;
-    var blockTags = exports.blockTags;
-    var formatOptions = exports.formatOptions || {};
+    var singletonTags = _singletonTags;
+    var blockTags = _blockTags;
+    var formatOptions = _formatOptions || {};
     var nextToken;
     var breakBefore = false;
     var spaceBefore = false;
@@ -390,11 +389,11 @@ exports.beautify = function(session) {
     session.doc.setValue(code);
 };
 
-exports.commands = [{
+export const commands = [{
     name: "beautify",
     description: "Format selection (Beautify)",
     exec: function(editor) {
-        exports.beautify(editor.session);
+        beautify(editor.session);
     },
     bindKey: "Ctrl-Shift-B"
 }];

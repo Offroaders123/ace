@@ -1,11 +1,10 @@
-"use strict";
-var dom = require("../lib/dom");
-var oop = require("../lib/oop");
-var EventEmitter = require("../lib/event_emitter").EventEmitter;
+import { createElement } from "../lib/dom.js";
+import { implement } from "../lib/oop.js";
+import { EventEmitter } from "../lib/event_emitter.js";
 
-class Decorator {
+export class Decorator {
     constructor(parent, renderer) {
-        this.canvas = dom.createElement("canvas");
+        this.canvas = createElement("canvas");
         this.renderer = renderer;
         this.pixelRatio = 1;
         this.maxHeight = renderer.layerConfig.maxHeight;
@@ -124,6 +123,4 @@ class Decorator {
     }
 }
 
-oop.implement(Decorator.prototype, EventEmitter);
-
-exports.Decorator = Decorator;
+implement(Decorator.prototype, EventEmitter);

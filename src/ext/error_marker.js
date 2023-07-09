@@ -1,8 +1,7 @@
-"use strict";
-var LineWidgets = require("../line_widgets").LineWidgets;
-var dom = require("../lib/dom");
-var Range = require("../range").Range;
-var nls = require("../config").nls;
+import { LineWidgets } from "../line_widgets.js";
+import { createElement, importCssString } from "../lib/dom.js";
+import { Range } from "../range.js";
+import { nls } from "../config.js";
 
 function binarySearch(array, needle, comparator) {
     var first = 0;
@@ -59,7 +58,7 @@ function findAnnotations(session, row, dir) {
     return matched.length && matched;
 }
 
-exports.showErrorMarker = function(editor, dir) {
+export function showErrorMarker(editor, dir) {
     var session = editor.session;
     if (!session.widgetManager) {
         session.widgetManager = new LineWidgets(session);
@@ -100,11 +99,11 @@ exports.showErrorMarker = function(editor, dir) {
         row: pos.row, 
         fixedWidth: true,
         coverGutter: true,
-        el: dom.createElement("div"),
+        el: createElement("div"),
         type: "errorMarker"
     };
-    var el = w.el.appendChild(dom.createElement("div"));
-    var arrow = w.el.appendChild(dom.createElement("div"));
+    var el = w.el.appendChild(createElement("div"));
+    var arrow = w.el.appendChild(createElement("div"));
     arrow.className = "error_widget_arrow " + gutterAnno.className;
     
     var left = editor.renderer.$cursorLayer
@@ -115,7 +114,7 @@ exports.showErrorMarker = function(editor, dir) {
     el.className = "error_widget " + gutterAnno.className;
     el.innerHTML = gutterAnno.text.join("<br>");
     
-    el.appendChild(dom.createElement("div"));
+    el.appendChild(createElement("div"));
     
     var kb = function(_, hashId, keyString) {
         if (hashId === 0 && (keyString === "esc" || keyString === "return")) {
@@ -149,7 +148,7 @@ exports.showErrorMarker = function(editor, dir) {
 };
 
 
-dom.importCssString(`
+importCssString(`
     .error_widget_wrapper {
         background: inherit;
         color: inherit;

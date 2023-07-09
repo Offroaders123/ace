@@ -1,9 +1,12 @@
-"use strict";
+import { getMatchOffsets } from "./lib/lang.js";
+import { Range } from "./range.js";
 
-var lang = require("./lib/lang");
-var Range = require("./range").Range;
+export class SearchHighlight {
+    /**
+     * needed to prevent long lines from freezing the browser
+    */
+    MAX_RANGES = 500;
 
-class SearchHighlight {
     constructor(regExp, clazz, type = "text") {
         this.setRegexp(regExp);
         this.clazz = clazz;
@@ -26,7 +29,7 @@ class SearchHighlight {
         for (var i = start; i <= end; i++) {
             var ranges = this.cache[i];
             if (ranges == null) {
-                ranges = lang.getMatchOffsets(session.getLine(i), this.regExp);
+                ranges = getMatchOffsets(session.getLine(i), this.regExp);
                 if (ranges.length > this.MAX_RANGES)
                     ranges = ranges.slice(0, this.MAX_RANGES);
                 ranges = ranges.map(function(match) {
@@ -48,8 +51,3 @@ class SearchHighlight {
     }
 
 }
-
-// needed to prevent long lines from freezing the browser
-SearchHighlight.prototype.MAX_RANGES = 500;
-
-exports.SearchHighlight = SearchHighlight;

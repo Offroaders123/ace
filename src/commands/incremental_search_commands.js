@@ -1,10 +1,10 @@
-var config = require("../config");
-var oop = require("../lib/oop");
-var HashHandler = require("../keyboard/hash_handler").HashHandler;
-var occurStartCommand = require("./occur_commands").occurStartCommand;
+import * as config from "../config.js";
+import * as oop from "../lib/oop.js";
+import { HashHandler } from "../keyboard/hash_handler.js";
+import { occurStartCommand } from "./occur_commands.js";
 
 // These commands can be installed in a normal key handler to start iSearch:
-exports.iSearchStartCommands = [{
+export const iSearchStartCommands = [{
     name: "iSearch",
     bindKey: {win: "Ctrl-F", mac: "Command-F"},
     exec: function(editor, options) {
@@ -32,7 +32,7 @@ exports.iSearchStartCommands = [{
 }];
 
 // These commands are only available when incremental search mode is active:
-exports.iSearchCommands = [{
+export const iSearchCommands = [{
     name: "restartSearch",
     bindKey: {win: "Ctrl-F", mac: "Command-F"},
     exec: function(iSearch) {
@@ -131,8 +131,10 @@ exports.iSearchCommands = [{
     return cmd;
 });
 
-function IncrementalSearchKeyboardHandler(iSearch) {
-    this.$iSearch = iSearch;
+export class IncrementalSearchKeyboardHandler {
+    constructor(iSearch) {
+        this.$iSearch = iSearch;
+    }
 }
 
 oop.inherits(IncrementalSearchKeyboardHandler, HashHandler);
@@ -141,7 +143,7 @@ oop.inherits(IncrementalSearchKeyboardHandler, HashHandler);
 
     this.attach = function(editor) {
         var iSearch = this.$iSearch;
-        HashHandler.call(this, exports.iSearchCommands, editor.commands.platform);
+        HashHandler.call(this, iSearchCommands, editor.commands.platform);
         this.$commandExecHandler = editor.commands.on('exec', function(e) {
             if (!e.command.isIncrementalSearchCommand)
                 return iSearch.deactivate();
@@ -175,6 +177,3 @@ oop.inherits(IncrementalSearchKeyboardHandler, HashHandler);
     };
 
 }).call(IncrementalSearchKeyboardHandler.prototype);
-
-
-exports.IncrementalSearchKeyboardHandler = IncrementalSearchKeyboardHandler;

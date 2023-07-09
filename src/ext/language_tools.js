@@ -1,12 +1,10 @@
-"use strict";
+import { snippetManager } from "../snippets.js";
+import { Autocomplete } from "../autocomplete.js";
+import { $modes, loadModule } from "../config.js";
+import { escapeHTML, delayedCall } from "../lib/lang.js";
+import { getCompletionPrefix, triggerAutocomplete as _triggerAutocomplete } from "../autocomplete/util.js";
 
-var snippetManager = require("../snippets").snippetManager;
-var Autocomplete = require("../autocomplete").Autocomplete;
-var config = require("../config");
-var lang = require("../lib/lang");
-var util = require("../autocomplete/util");
-
-var textCompleter = require("../autocomplete/text_completer");
+import * as textCompleter from "../autocomplete/text_completer.js";
 var keyWordCompleter = {
     getCompletions: function(editor, session, pos, prefix, callback) {
         if (session.$mode.completer) {
@@ -65,8 +63,8 @@ var snippetCompleter = {
     getDocTooltip: function(item) {
         if (item.snippet && !item.docHTML) {
             item.docHTML = [
-                "<b>", lang.escapeHTML(item.caption), "</b>", "<hr></hr>",
-                lang.escapeHTML(transformSnippetTooltip(item.snippet))
+                "<b>", escapeHTML(item.caption), "</b>", "<hr></hr>",
+                escapeHTML(transformSnippetTooltip(item.snippet))
             ].join("");
         }
     },
@@ -75,18 +73,20 @@ var snippetCompleter = {
 
 var completers = [snippetCompleter, textCompleter, keyWordCompleter];
 // Modifies list of default completers
-exports.setCompleters = function(val) {
+export function setCompleters(val) {
     completers.length = 0;
     if (val) completers.push.apply(completers, val);
-};
-exports.addCompleter = function(completer) {
+}
+export function addCompleter(completer) {
     completers.push(completer);
-};
+}
 
 // Exports existing completer so that user can construct his own set of completers.
-exports.textCompleter = textCompleter;
-exports.keyWordCompleter = keyWordCompleter;
-exports.snippetCompleter = snippetCompleter;
+export {
+    textCompleter,
+    keyWordCompleter,
+    snippetCompleter
+};
 
 var expandSnippet = {
     name: "expandSnippet",
@@ -102,7 +102,7 @@ var onChangeMode = function(e, editor) {
 
 var loadSnippetsForMode = function(mode) {
     if (typeof mode == "string")
-        mode = config.$modes[mode];
+        mode = $modes[mode];
     if (!mode)
         return;
     if (!snippetManager.files)
@@ -117,7 +117,7 @@ var loadSnippetFile = function(id, snippetFilePath) {
     if (!snippetFilePath || !id || snippetManager.files[id])
         return;
     snippetManager.files[id] = {};
-    config.loadModule(snippetFilePath, function(m) {
+    loadModule(snippetFilePath, function(m) {
         if (!m) return;
         snippetManager.files[id] = m;
         if (!m.snippets && m.snippetText)
@@ -138,7 +138,7 @@ var doLiveAutocomplete = function(e) {
 
     // We don't want to autocomplete with no prefix
     if (e.command.name === "backspace") {
-        if (hasCompleter && !util.getCompletionPrefix(editor))
+        if (hasCompleter && !getCompletionPrefix(editor))
             editor.completer.detach();
     }
     else if (e.command.name === "insertstring" && !hasCompleter) {
@@ -153,15 +153,15 @@ var doLiveAutocomplete = function(e) {
 };
 
 var lastExecEvent;
-var liveAutocompleteTimer = lang.delayedCall(function () {
+var liveAutocompleteTimer = delayedCall(function () {
     showLiveAutocomplete(lastExecEvent);
 }, 0);
 
 var showLiveAutocomplete = function(e) {
     var editor = e.editor;
-    var prefix = util.getCompletionPrefix(editor);
+    var prefix = getCompletionPrefix(editor);
     // Only autocomplete if there's a prefix that can be matched or previous char is trigger character 
-    var triggerAutocomplete = util.triggerAutocomplete(editor);
+    var triggerAutocomplete = _triggerAutocomplete(editor);
     if ((prefix || triggerAutocomplete) && prefix.length >= editor.$liveAutocompletionThreshold) {
         var completer = Autocomplete.for(editor);
         // Set a flag for auto shown
@@ -170,7 +170,7 @@ var showLiveAutocomplete = function(e) {
     }
 };
 
-var Editor = require("../editor").Editor;
+import { Editor } from "../editor.js";
 require("../config").defineOptions(Editor.prototype, "editor", {
     enableBasicAutocompletion: {
         set: function(val) {

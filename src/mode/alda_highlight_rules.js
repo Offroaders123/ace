@@ -4,12 +4,11 @@
  * fileTypes                                                                            *
  ****************************************************************************************/
 
-    "use strict";
+    import { inherits } from "../lib/oop.js";
+    import { TextHighlightRules } from "./text_highlight_rules.js";
     
-    var oop = require("../lib/oop");
-    var TextHighlightRules = require("./text_highlight_rules").TextHighlightRules;
-    
-    var AldaHighlightRules = function() {
+    export class AldaHighlightRules {
+    constructor() {
         // regexp must not have capturing parentheses. Use (?:) instead.
         // regexps are ordered -> the first match is used
     
@@ -144,6 +143,4 @@
     };
     
     
-    oop.inherits(AldaHighlightRules, TextHighlightRules);
-    
-    exports.AldaHighlightRules = AldaHighlightRules;
+    inherits(AldaHighlightRules, TextHighlightRules);

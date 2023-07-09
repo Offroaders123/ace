@@ -1,11 +1,12 @@
-"use strict";
-
 /*
 Potential improvements:
 - use binary search when looking for hover match
 */
 
-class MarkerGroup {
+export class MarkerGroup {
+    // this caps total amount of markers at 10K
+    MAX_MARKERS = 10000;
+
     constructor(session) {
         this.markers = [];
         this.session = session;
@@ -94,9 +95,3 @@ class MarkerGroup {
     }
 
 }
-
-// this caps total amount of markers at 10K
-MarkerGroup.prototype.MAX_MARKERS = 10000;
-
-exports.MarkerGroup = MarkerGroup;
-

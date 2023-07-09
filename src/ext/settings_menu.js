@@ -11,9 +11,8 @@
  *  ☭ Hial Atropa!! ☭
  */
 
-"use strict";
-var OptionPanel = require("./options").OptionPanel;
-var overlayPage = require('./menu_tools/overlay_page').overlayPage;
+import { OptionPanel } from "./options.js";
+import { overlayPage } from './menu_tools/overlay_page.js';
 /**
  * This displays the settings menu if it is not already being shown.
  * @author <a href="mailto:matthewkastor@gmail.com">
@@ -38,7 +37,7 @@ function showSettingsMenu(editor) {
  *  to the editor with appropriate keyboard shortcuts.
  * @param {ace.Editor} editor An instance of the Editor.
  */
-module.exports.init = function() {
+export function init() {
     var Editor = require("../editor").Editor;
     Editor.prototype.showSettingsMenu = function() {
         showSettingsMenu(this);

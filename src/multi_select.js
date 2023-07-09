@@ -1,14 +1,15 @@
-var RangeList = require("./range_list").RangeList;
-var Range = require("./range").Range;
-var Selection = require("./selection").Selection;
-var onMouseDown = require("./mouse/multi_select_handler").onMouseDown;
-var event = require("./lib/event");
-var lang = require("./lib/lang");
-var commands = require("./commands/multi_select_commands");
-exports.commands = commands.defaultCommands.concat(commands.multiSelectCommands);
+import { RangeList } from "./range_list.js";
+import { Range } from "./range.js";
+import { Selection } from "./selection.js";
+import { onMouseDown } from "./mouse/multi_select_handler.js";
+import { addListener } from "./lib/event.js";
+import { stringRepeat } from "./lib/lang.js";
+import { keyboardHandler, defaultCommands, multiSelectCommands } from "./commands/multi_select_commands.js";
+// @ts-expect-error - I think this can use the spread operator instead maybe
+export const commands = defaultCommands.concat(multiSelectCommands);
 
 // Todo: session.find or editor.findVolatile that returns range
-var Search = require("./search").Search;
+import { Search } from "./search.js";
 var search = new Search();
 
 function find(session, needle, dir) {
@@ -19,7 +20,7 @@ function find(session, needle, dir) {
 }
 
 // extend EditSession
-var EditSession = require("./edit_session").EditSession;
+import { EditSession } from "./edit_session.js";
 (function() {
     this.getSelectionMarkers = function() {
         return this.$selectionMarkers;
@@ -301,7 +302,7 @@ var EditSession = require("./edit_session").EditSession;
 }).call(Selection.prototype);
 
 // extend Editor
-var Editor = require("./editor").Editor;
+import { Editor } from "./editor.js";
 (function() {
 
     /** 
@@ -380,7 +381,7 @@ var Editor = require("./editor").Editor;
         this.inMultiSelectMode = true;
 
         this.setStyle("ace_multiselect");
-        this.keyBinding.addKeyboardHandler(commands.keyboardHandler);
+        this.keyBinding.addKeyboardHandler(keyboardHandler);
         this.commands.setDefaultHandler("exec", this.$onMultiSelectExec);
 
         this.renderer.updateCursor();
@@ -393,7 +394,7 @@ var Editor = require("./editor").Editor;
         this.inMultiSelectMode = false;
 
         this.unsetStyle("ace_multiselect");
-        this.keyBinding.removeKeyboardHandler(commands.keyboardHandler);
+        this.keyBinding.removeKeyboardHandler(keyboardHandler);
 
         this.commands.removeDefaultHandler("exec", this.$onMultiSelectExec);
         this.renderer.updateCursor();
@@ -748,7 +749,7 @@ var Editor = require("./editor").Editor;
                 var l = maxCol - p.column;
                 var d = spaceOffsets[i] - minSpace;
                 if (l > d)
-                    session.insert(p, lang.stringRepeat(" ", l - d));
+                    session.insert(p, stringRepeat(" ", l - d));
                 else
                     session.remove(new Range(p.row, p.column, p.row, p.column - l + d));
 
@@ -795,7 +796,7 @@ var Editor = require("./editor").Editor;
             isLeftAligned ? isRightAligned ? alignRight : alignLeft : unAlign);
 
         function spaces(n) {
-            return lang.stringRepeat(" ", n);
+            return stringRepeat(" ", n);
         }
 
         function alignLeft(m) {
@@ -823,7 +824,8 @@ function isSamePoint(p1, p2) {
 
 // patch
 // adds multicursor support to a session
-exports.onSessionChange = function(e) {
+export class onSessionChange {
+    constructor(e) {
     var session = e.session;
     if (session && !session.multiSelect) {
         session.$selectionMarkers = [];
@@ -857,26 +859,27 @@ exports.onSessionChange = function(e) {
         else
             this.$onSingleSelect();
     }
+}
 };
 
 // MultiSelect(editor)
 // adds multiple selection support to the editor
 // (note: should be called only once for each editor instance)
-function MultiSelect(editor) {
+export function MultiSelect(editor) {
     if (editor.$multiselectOnSessionChange)
         return;
     editor.$onAddRange = editor.$onAddRange.bind(editor);
     editor.$onRemoveRange = editor.$onRemoveRange.bind(editor);
     editor.$onMultiSelect = editor.$onMultiSelect.bind(editor);
     editor.$onSingleSelect = editor.$onSingleSelect.bind(editor);
-    editor.$multiselectOnSessionChange = exports.onSessionChange.bind(editor);
+    editor.$multiselectOnSessionChange = onSessionChange.bind(editor);
     editor.$checkMultiselectChange = editor.$checkMultiselectChange.bind(editor);
 
     editor.$multiselectOnSessionChange(editor);
     editor.on("changeSession", editor.$multiselectOnSessionChange);
 
     editor.on("mousedown", onMouseDown);
-    editor.commands.addCommands(commands.defaultCommands);
+    editor.commands.addCommands(defaultCommands);
 
     addAltCursorListeners(editor);
 }
@@ -885,7 +888,7 @@ function addAltCursorListeners(editor){
     if (!editor.textInput) return;
     var el = editor.textInput.getElement();
     var altCursor = false;
-    event.addListener(el, "keydown", function(e) {
+    addListener(el, "keydown", function(e) {
         var altDown = e.keyCode == 18 && !(e.ctrlKey || e.shiftKey || e.metaKey);
         if (editor.$blockSelectEnabled && altDown) {
             if (!altCursor) {
@@ -897,8 +900,8 @@ function addAltCursorListeners(editor){
         }
     }, editor);
 
-    event.addListener(el, "keyup", reset, editor);
-    event.addListener(el, "blur", reset, editor);
+    addListener(el, "keyup", reset, editor);
+    addListener(el, "blur", reset, editor);
     function reset(e) {
         if (altCursor) {
             editor.renderer.setMouseCursor("");
@@ -908,9 +911,6 @@ function addAltCursorListeners(editor){
         }
     }
 }
-
-exports.MultiSelect = MultiSelect;
-
 
 require("./config").defineOptions(Editor.prototype, "editor", {
     enableMultiselect: {

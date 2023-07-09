@@ -1,4 +1,4 @@
-module.exports = `snippet comm
+export default `snippet comm
 	(comment
 	  \${1}
 	  )

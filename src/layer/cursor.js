@@ -1,11 +1,11 @@
-"use strict";
+import { createElement, addCssClass, setStyle, removeCssClass, setCssClass, HAS_CSS_ANIMATION, translate } from "../lib/dom.js";
 
-var dom = require("../lib/dom");
+export class Cursor {
+    $padding = 0;
+    drawCursor = null;
 
-
-class Cursor {
     constructor(parentEl) {
-        this.element = dom.createElement("div");
+        this.element = createElement("div");
         this.element.className = "ace_layer ace_cursor-layer";
         parentEl.appendChild(this.element);
 
@@ -16,14 +16,14 @@ class Cursor {
 
         this.cursors = [];
         this.cursor = this.addCursor();
-        dom.addCssClass(this.element, "ace_hidden-cursors");
+        addCssClass(this.element, "ace_hidden-cursors");
         this.$updateCursors = this.$updateOpacity.bind(this);
     }
     
     $updateOpacity(val) {
         var cursors = this.cursors;
         for (var i = cursors.length; i--; )
-            dom.setStyle(cursors[i].style, "opacity", val ? "" : "0");
+            setStyle(cursors[i].style, "opacity", val ? "" : "0");
     }
 
     $startCssAnimation() {
@@ -34,14 +34,14 @@ class Cursor {
         this.$isAnimating = true;
         setTimeout(function() {
             if (this.$isAnimating) {
-                dom.addCssClass(this.element, "ace_animate-blinking");
+                addCssClass(this.element, "ace_animate-blinking");
             }
         }.bind(this));
     }
     
     $stopCssAnimation() {
         this.$isAnimating = false;
-        dom.removeCssClass(this.element, "ace_animate-blinking");
+        removeCssClass(this.element, "ace_animate-blinking");
     }
     
     setPadding(padding) {
@@ -69,14 +69,14 @@ class Cursor {
     setSmoothBlinking(smoothBlinking) {
         if (smoothBlinking != this.smoothBlinking) {
             this.smoothBlinking = smoothBlinking;
-            dom.setCssClass(this.element, "ace_smooth-blinking", smoothBlinking);
+            setCssClass(this.element, "ace_smooth-blinking", smoothBlinking);
             this.$updateCursors(true);
             this.restartTimer();
         }
     }
 
     addCursor() {
-        var el = dom.createElement("div");
+        var el = createElement("div");
         el.className = "ace_cursor";
         this.element.appendChild(el);
         this.cursors.push(el);
@@ -93,13 +93,13 @@ class Cursor {
 
     hideCursor() {
         this.isVisible = false;
-        dom.addCssClass(this.element, "ace_hidden-cursors");
+        addCssClass(this.element, "ace_hidden-cursors");
         this.restartTimer();
     }
 
     showCursor() {
         this.isVisible = true;
-        dom.removeCssClass(this.element, "ace_hidden-cursors");
+        removeCssClass(this.element, "ace_hidden-cursors");
         this.restartTimer();
     }
 
@@ -111,7 +111,7 @@ class Cursor {
 
         if (this.smoothBlinking) {
             this.$isSmoothBlinking = false;
-            dom.removeCssClass(this.element, "ace_smooth-blinking");
+            removeCssClass(this.element, "ace_smooth-blinking");
         }
         
         update(true);
@@ -125,12 +125,12 @@ class Cursor {
             this.$isSmoothBlinking = true;
             setTimeout(function() {
                 if (this.$isSmoothBlinking) {
-                    dom.addCssClass(this.element, "ace_smooth-blinking");
+                    addCssClass(this.element, "ace_smooth-blinking");
                 }
             }.bind(this));
         }
         
-        if (dom.HAS_CSS_ANIMATION) {
+        if (HAS_CSS_ANIMATION) {
             this.$startCssAnimation();
         } else {
             var blink = function(){
@@ -190,12 +190,12 @@ class Cursor {
             
             if (!this.drawCursor) {
                 if (!this.isCursorInView(pixelPos, config)) {
-                    dom.setStyle(style, "display", "none");
+                    setStyle(style, "display", "none");
                 } else {
-                    dom.setStyle(style, "display", "block");
-                    dom.translate(element, pixelPos.left, pixelPos.top);
-                    dom.setStyle(style, "width", Math.round(config.characterWidth) + "px");
-                    dom.setStyle(style, "height", config.lineHeight + "px");
+                    setStyle(style, "display", "block");
+                    translate(element, pixelPos.left, pixelPos.top);
+                    setStyle(style, "width", Math.round(config.characterWidth) + "px");
+                    setStyle(style, "height", config.lineHeight + "px");
                 }
             } else {
                 this.drawCursor(element, pixelPos, config, selections[i], this.session);
@@ -216,9 +216,9 @@ class Cursor {
         if (overwrite != this.overwrite) {
             this.overwrite = overwrite;
             if (overwrite)
-                dom.addCssClass(this.element, "ace_overwrite-cursors");
+                addCssClass(this.element, "ace_overwrite-cursors");
             else
-                dom.removeCssClass(this.element, "ace_overwrite-cursors");
+                removeCssClass(this.element, "ace_overwrite-cursors");
         }
     }
 
@@ -228,9 +228,3 @@ class Cursor {
     }
 
 }
-
-Cursor.prototype.$padding = 0;
-Cursor.prototype.drawCursor = null;
-
-
-exports.Cursor = Cursor;

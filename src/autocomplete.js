@@ -1,14 +1,12 @@
-"use strict";
-
-var HashHandler = require("./keyboard/hash_handler").HashHandler;
-var AcePopup = require("./autocomplete/popup").AcePopup;
-var AceInline = require("./autocomplete/inline").AceInline;
-var getAriaId = require("./autocomplete/popup").getAriaId;
-var util = require("./autocomplete/util");
-var lang = require("./lib/lang");
-var dom = require("./lib/dom");
-var snippetManager = require("./snippets").snippetManager;
-var config = require("./config");
+import { HashHandler } from "./keyboard/hash_handler.js";
+import { AcePopup } from "./autocomplete/popup.js";
+import { AceInline } from "./autocomplete/inline.js";
+import { getAriaId } from "./autocomplete/popup.js";
+import { getCompletionPrefix } from "./autocomplete/util.js";
+import { delayedCall } from "./lib/lang.js";
+import { createElement } from "./lib/dom.js";
+import { snippetManager } from "./snippets.js";
+import { get } from "./config.js";
 
 /**
  * @typedef BaseCompletion
@@ -51,7 +49,61 @@ var destroyCompleter = function(e, editor) {
  * This object controls the autocompletion components and their lifecycle.
  * There is an autocompletion popup, an optional inline ghost text renderer and a docuent tooltip popup inside.
  */
-class Autocomplete {
+export class Autocomplete {
+    static for = function(editor) {
+        if (editor.completer instanceof Autocomplete) {
+            return editor.completer;
+        }
+        if (editor.completer) {
+            editor.completer.destroy();
+            editor.completer = null;
+        }
+        if (get("sharedPopups")) {
+            if (!Autocomplete.$sharedInstance)
+                Autocomplete.$sharedInstance = new Autocomplete();
+            editor.completer = Autocomplete.$sharedInstance;
+        } else {
+            editor.completer = new Autocomplete();
+            editor.once("destroy", destroyCompleter);
+        }
+        return editor.completer;
+    };
+
+    static startCommand = {
+        name: "startAutocomplete",
+        exec: function(editor, options) {
+            var completer = Autocomplete.for(editor);
+            completer.autoInsert = false;
+            completer.autoSelect = true;
+            completer.autoShown = false;
+            completer.showPopup(editor, options);
+            // prevent ctrl-space opening context menu on firefox on mac
+            completer.cancelContextMenu();
+        },
+        bindKey: "Ctrl-Space|Ctrl-Shift-Space|Alt-Space"
+    };
+
+    commands = {
+        "Up": function(editor) { editor.completer.goTo("up"); },
+        "Down": function(editor) { editor.completer.goTo("down"); },
+        "Ctrl-Up|Ctrl-Home": function(editor) { editor.completer.goTo("start"); },
+        "Ctrl-Down|Ctrl-End": function(editor) { editor.completer.goTo("end"); },
+    
+        "Esc": function(editor) { editor.completer.detach(); },
+        "Return": function(editor) { return editor.completer.insertMatch(); },
+        "Shift-Return": function(editor) { editor.completer.insertMatch(null, {deleteSuffix: true}); },
+        "Tab": function(editor) {
+            var result = editor.completer.insertMatch();
+            if (!result && !editor.tabstopManager)
+                editor.completer.goTo("down");
+            else
+                return result;
+        },
+    
+        "PageUp": function(editor) { editor.completer.popup.gotoPageUp(); },
+        "PageDown": function(editor) { editor.completer.popup.gotoPageDown(); }
+    };
+    
     constructor() {
         this.autoInsert = false;
         this.autoSelect = true;
@@ -68,11 +120,11 @@ class Autocomplete {
         this.mousewheelListener = this.mousewheelListener.bind(this);
         this.onLayoutChange = this.onLayoutChange.bind(this);
 
-        this.changeTimer = lang.delayedCall(function() {
+        this.changeTimer = delayedCall(function() {
             this.updateCompletions(true);
         }.bind(this));
 
-        this.tooltipTimer = lang.delayedCall(this.updateDocTooltip.bind(this), 50);
+        this.tooltipTimer = delayedCall(this.updateDocTooltip.bind(this), 50);
     }
 
     $init() {
@@ -110,7 +162,7 @@ class Autocomplete {
     $onPopupChange(hide) {
         if (this.inlineRenderer && this.inlineEnabled) {
             var completion = hide ? null : this.popup.getData(this.popup.getRow());
-            var prefix = util.getCompletionPrefix(this.editor);
+            var prefix = getCompletionPrefix(this.editor);
             if (!this.inlineRenderer.show(this.editor, completion, prefix)) {
                 this.inlineRenderer.hide();
             }
@@ -366,13 +418,13 @@ class Autocomplete {
 
         var session = this.editor.getSession();
         var pos = this.editor.getCursorPosition();
-        var prefix = util.getCompletionPrefix(this.editor);
+        var prefix = getCompletionPrefix(this.editor);
         this.base = session.doc.createAnchor(pos.row, pos.column - prefix.length);
         this.base.$insertRight = true;
         var completionOptions = { exactMatch: this.exactMatch };
         this.getCompletionProvider().provideCompletions(this.editor, completionOptions, function(err, completions, finished) {
             var filtered = completions.filtered;
-            var prefix = util.getCompletionPrefix(this.editor);
+            var prefix = getCompletionPrefix(this.editor);
 
             if (finished) {
                 // No results
@@ -437,7 +489,7 @@ class Autocomplete {
 
     showDocTooltip(item) {
         if (!this.tooltipNode) {
-            this.tooltipNode = dom.createElement("div");
+            this.tooltipNode = createElement("div");
             this.tooltipNode.style.margin = 0;
             this.tooltipNode.style.pointerEvents = "auto";
             this.tooltipNode.tabIndex = -1;
@@ -529,65 +581,10 @@ class Autocomplete {
 
 }
 
-Autocomplete.prototype.commands = {
-    "Up": function(editor) { editor.completer.goTo("up"); },
-    "Down": function(editor) { editor.completer.goTo("down"); },
-    "Ctrl-Up|Ctrl-Home": function(editor) { editor.completer.goTo("start"); },
-    "Ctrl-Down|Ctrl-End": function(editor) { editor.completer.goTo("end"); },
-
-    "Esc": function(editor) { editor.completer.detach(); },
-    "Return": function(editor) { return editor.completer.insertMatch(); },
-    "Shift-Return": function(editor) { editor.completer.insertMatch(null, {deleteSuffix: true}); },
-    "Tab": function(editor) {
-        var result = editor.completer.insertMatch();
-        if (!result && !editor.tabstopManager)
-            editor.completer.goTo("down");
-        else
-            return result;
-    },
-
-    "PageUp": function(editor) { editor.completer.popup.gotoPageUp(); },
-    "PageDown": function(editor) { editor.completer.popup.gotoPageDown(); }
-};
-
-
-Autocomplete.for = function(editor) {
-    if (editor.completer instanceof Autocomplete) {
-        return editor.completer;
-    }
-    if (editor.completer) {
-        editor.completer.destroy();
-        editor.completer = null;
-    }
-    if (config.get("sharedPopups")) {
-        if (!Autocomplete.$sharedInstance)
-            Autocomplete.$sharedInstance = new Autocomplete();
-        editor.completer = Autocomplete.$sharedInstance;
-    } else {
-        editor.completer = new Autocomplete();
-        editor.once("destroy", destroyCompleter);
-    }
-    return editor.completer;
-};
-
-Autocomplete.startCommand = {
-    name: "startAutocomplete",
-    exec: function(editor, options) {
-        var completer = Autocomplete.for(editor);
-        completer.autoInsert = false;
-        completer.autoSelect = true;
-        completer.autoShown = false;
-        completer.showPopup(editor, options);
-        // prevent ctrl-space opening context menu on firefox on mac
-        completer.cancelContextMenu();
-    },
-    bindKey: "Ctrl-Space|Ctrl-Shift-Space|Alt-Space"
-};
-
 /**
  * This class is responsible for providing completions and inserting them to the editor
  */
-class CompletionProvider {
+export class CompletionProvider {
     
     constructor() {
         this.active = true;
@@ -662,7 +659,7 @@ class CompletionProvider {
         var session = editor.getSession();
         var pos = editor.getCursorPosition();
     
-        var prefix = util.getCompletionPrefix(editor);
+        var prefix = getCompletionPrefix(editor);
     
         var matches = [];
         this.completers = editor.completers;
@@ -673,7 +670,7 @@ class CompletionProvider {
                     matches = matches.concat(results);
                 // Fetch prefix again, because they may have changed by now
                 callback(null, {
-                    prefix: util.getCompletionPrefix(editor),
+                    prefix: getCompletionPrefix(editor),
                     matches: matches,
                     finished: (--total === 0)
                 });
@@ -751,7 +748,7 @@ class CompletionProvider {
     }
 }
 
-class FilteredList {
+export class FilteredList {
     constructor(array, filterText) {
         this.all = array;
         this.filtered = array;
@@ -837,7 +834,3 @@ class FilteredList {
         return results;
     }
 }
-
-exports.Autocomplete = Autocomplete;
-exports.CompletionProvider = CompletionProvider;
-exports.FilteredList = FilteredList;

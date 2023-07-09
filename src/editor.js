@@ -1,27 +1,25 @@
-"use strict";
+import { mixin, implement } from "./lib/oop.js";
+import { computedStyle, setCssClass, removeCssClass, addCssClass, createElement } from "./lib/dom.js";
+import { delayedCall, stringRepeat, escapeRegExp } from "./lib/lang.js";
+import { isMac } from "./lib/useragent.js";
+import { TextInput } from "./keyboard/textinput.js";
+import { MouseHandler } from "./mouse/mouse_handler.js";
+import { FoldHandler } from "./mouse/fold_handler.js";
+import { KeyBinding } from "./keyboard/keybinding.js";
+import { EditSession } from "./edit_session.js";
+import { Search } from "./search.js";
+import { Range } from "./range.js";
+import { EventEmitter } from "./lib/event_emitter.js";
+import { CommandManager } from "./commands/command_manager.js";
+import { commands as defaultCommands } from "./commands/default_commands.js";
+import { resetOptions, _signal, loadModule, defineOptions } from "./config.js";
+import { TokenIterator } from "./token_iterator.js";
+import { LineWidgets } from "./line_widgets.js";
+import { GutterKeyboardHandler } from "./keyboard/gutter_handler.js";
+import { nls } from "./config.js";
 
-var oop = require("./lib/oop");
-var dom = require("./lib/dom");
-var lang = require("./lib/lang");
-var useragent = require("./lib/useragent");
-var TextInput = require("./keyboard/textinput").TextInput;
-var MouseHandler = require("./mouse/mouse_handler").MouseHandler;
-var FoldHandler = require("./mouse/fold_handler").FoldHandler;
-var KeyBinding = require("./keyboard/keybinding").KeyBinding;
-var EditSession = require("./edit_session").EditSession;
-var Search = require("./search").Search;
-var Range = require("./range").Range;
-var EventEmitter = require("./lib/event_emitter").EventEmitter;
-var CommandManager = require("./commands/command_manager").CommandManager;
-var defaultCommands = require("./commands/default_commands").commands;
-var config = require("./config");
-var TokenIterator = require("./token_iterator").TokenIterator;
-var LineWidgets = require("./line_widgets").LineWidgets;
-var GutterKeyboardHandler = require("./keyboard/gutter_handler").GutterKeyboardHandler;
-var nls = require("./config").nls;
-
-var clipboard = require("./clipboard");
-var keys = require('./lib/keys');
+import { lineMode as _lineMode } from "./clipboard.js";
+import keys from './lib/keys.js';
 
 /**
  * The main entry point into the Ace functionality.
@@ -30,7 +28,7 @@ var keys = require('./lib/keys');
  *
  * Event sessions dealing with the mouse and keyboard are bubbled up from `Document` to the `Editor`, which decides what to do with them.
  **/
-class Editor {
+export class Editor {
     /**
      * Creates a new `Editor` object.
      *
@@ -44,7 +42,7 @@ class Editor {
         this.renderer = renderer;
         this.id = "editor" + (++Editor.$uid);
 
-        this.commands = new CommandManager(useragent.isMac ? "mac" : "win", defaultCommands);
+        this.commands = new CommandManager(isMac ? "mac" : "win", defaultCommands);
         if (typeof document == "object") {
             this.textInput = new TextInput(renderer.getTextAreaContainer(), this);
             this.renderer.textarea = this.textInput.getElement();
@@ -64,7 +62,7 @@ class Editor {
 
         this.$initOperationListeners();
 
-        this._$emitInputEvent = lang.delayedCall(function() {
+        this._$emitInputEvent = delayedCall(function() {
             this._signal("input", {});
             if (this.session && !this.session.destroyed)
                 this.session.bgTokenizer.scheduleStart();
@@ -75,17 +73,17 @@ class Editor {
         });
 
         this.setSession(session || options && options.session || new EditSession(""));
-        config.resetOptions(this);
+        resetOptions(this);
         if (options)
             this.setOptions(options);
-        config._signal("editor", this);
+        _signal("editor", this);
     }
 
     $initOperationListeners() {
         this.commands.on("exec", this.startOperation.bind(this), true);
         this.commands.on("afterExec", this.endOperation.bind(this), true);
 
-        this.$opResetTimer = lang.delayedCall(this.endOperation.bind(this, true));
+        this.$opResetTimer = delayedCall(this.endOperation.bind(this, true));
         
         // todo: add before change events?
         this.on("change", function() {
@@ -216,7 +214,7 @@ class Editor {
         if (keyboardHandler && typeof keyboardHandler === "string" && keyboardHandler != "ace") {
             this.$keybindingId = keyboardHandler;
             var _self = this;
-            config.loadModule(["keybinding", keyboardHandler], function(module) {
+            loadModule(["keybinding", keyboardHandler], function(module) {
                 if (_self.$keybindingId == keyboardHandler)
                     _self.keyBinding.setKeyboardHandler(module && module.handler);
                 cb && cb();
@@ -465,7 +463,7 @@ class Editor {
      */
     getFontSize() {
         return this.getOption("fontSize") ||
-           dom.computedStyle(this.container).fontSize;
+           computedStyle(this.container).fontSize;
     }
 
     /**
@@ -802,7 +800,7 @@ class Editor {
         }
         var e = {text: text};
         this._signal("copy", e);
-        clipboard.lineMode = copyLine ? e.text : false;
+        _lineMode = copyLine ? e.text : false;
         return e.text;
     }
 
@@ -844,7 +842,7 @@ class Editor {
         this._signal("paste", e);
         var text = e.text;
 
-        var lineMode = text === clipboard.lineMode;
+        var lineMode = text === _lineMode;
         var session = this.session;
         if (!this.inMultiSelectMode || this.inVirtualSelectionMode) {
             if (lineMode)
@@ -1526,7 +1524,7 @@ class Editor {
 
         if (this.session.getUseSoftTabs()) {
             var count = (size - column % size);
-            var indentString = lang.stringRepeat(" ", count);
+            var indentString = stringRepeat(" ", count);
         } else {
             var count = column % size;
             while (line[range.start.column - 1] == " " && count) {
@@ -1700,11 +1698,11 @@ class Editor {
             var item = wordPairs[i];
             for (var j = 0; j <= 1; j++) {
                 var negate = +!j;
-                var firstCondition = currentState.match(new RegExp('^\\s?_?(' + lang.escapeRegExp(item[j]) + ')\\s?$', 'i'));
+                var firstCondition = currentState.match(new RegExp('^\\s?_?(' + escapeRegExp(item[j]) + ')\\s?$', 'i'));
                 if (firstCondition) {
-                    var secondCondition = currentState.match(new RegExp('([_]|^|\\s)(' + lang.escapeRegExp(firstCondition[1]) + ')($|\\s)', 'g'));
+                    var secondCondition = currentState.match(new RegExp('([_]|^|\\s)(' + escapeRegExp(firstCondition[1]) + ')($|\\s)', 'g'));
                     if (secondCondition) {
-                        reg = currentState.replace(new RegExp(lang.escapeRegExp(item[j]), 'i'), function (result) {
+                        reg = currentState.replace(new RegExp(escapeRegExp(item[j]), 'i'), function (result) {
                             var res = item[negate];
                             if (result.toUpperCase() == result) {
                                 res = res.toUpperCase();
@@ -2532,7 +2530,7 @@ class Editor {
         if (typeof needle == "string" || needle instanceof RegExp)
             options.needle = needle;
         else if (typeof needle == "object")
-            oop.mixin(options, needle);
+            mixin(options, needle);
 
         var range = this.selection.getRange();
         if (options.needle == null) {
@@ -2704,7 +2702,7 @@ class Editor {
             return;
         cursorLayer.setSmoothBlinking(/smooth/.test(style));
         cursorLayer.isBlinking = !this.$readOnly && style != "wide";
-        dom.setCssClass(cursorLayer.element, "ace_slim-cursors", /slim/.test(style));
+        setCssClass(cursorLayer.element, "ace_slim-cursors", /slim/.test(style));
     }
 
     /**
@@ -2712,7 +2710,7 @@ class Editor {
      **/
     prompt(message, options, callback) {
         var editor = this;
-        config.loadModule("ace/ext/prompt", function (module) {
+        loadModule("ace/ext/prompt", function (module) {
             module.prompt(editor, message, options, callback);
         });
     }
@@ -2750,10 +2748,10 @@ Editor.prototype.$toggleWordPairs = [
     ["==", "!="]
 ];
 
-oop.implement(Editor.prototype, EventEmitter);
+implement(Editor.prototype, EventEmitter);
 
 
-config.defineOptions(Editor.prototype, "editor", {
+defineOptions(Editor.prototype, "editor", {
     selectionStyle: {
         set: function(style) {
             this.onSelectionChange();
@@ -2842,13 +2840,13 @@ config.defineOptions(Editor.prototype, "editor", {
                          this.session.getLength() > 1 || this.session.getLine(0).length > 0);
                     if (hasValue && this.renderer.placeholderNode) {
                         this.renderer.off("afterRender", this.$updatePlaceholder);
-                        dom.removeCssClass(this.container, "ace_hasPlaceholder");
+                        removeCssClass(this.container, "ace_hasPlaceholder");
                         this.renderer.placeholderNode.remove();
                         this.renderer.placeholderNode = null;
                     } else if (!hasValue && !this.renderer.placeholderNode) {
                         this.renderer.on("afterRender", this.$updatePlaceholder);
-                        dom.addCssClass(this.container, "ace_hasPlaceholder");
-                        var el = dom.createElement("div");
+                        addCssClass(this.container, "ace_hasPlaceholder");
+                        var el = createElement("div");
                         el.className = "ace_placeholder";
                         el.textContent = this.$placeholder || "";
                         this.renderer.placeholderNode = el;
@@ -3024,5 +3022,3 @@ var relativeNumberRenderer = {
         this.update(null, editor);
     }
 };
-
-exports.Editor = Editor;

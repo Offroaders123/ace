@@ -1,5 +1,3 @@
-"use strict";
-
 function throwDeltaError(delta, errorText){
     console.log("Invalid Delta:", delta);
     throw "Invalid Delta: " + errorText;
@@ -40,7 +38,7 @@ function validateDelta(docLines, delta) {
         throwDeltaError(delta, "delta.range must match delta lines");
 }
 
-exports.applyDelta = function(docLines, delta, doNotValidate) {
+export function applyDelta(docLines, delta, doNotValidate) {
     // disabled validation since it breaks autocompletion popup
     // if (!doNotValidate)
     //    validateDelta(docLines, delta);

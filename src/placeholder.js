@@ -1,10 +1,8 @@
-"use strict";
+import { Range } from "./range.js";
+import { EventEmitter } from "./lib/event_emitter.js";
+import { implement } from "./lib/oop.js";
 
-var Range = require("./range").Range;
-var EventEmitter = require("./lib/event_emitter").EventEmitter;
-var oop = require("./lib/oop");
-
-class PlaceHolder {
+export class PlaceHolder {
     /**
      * @param {Document} session The document to associate with the anchor
      * @param {Number} length The starting row position
@@ -216,6 +214,4 @@ class PlaceHolder {
     }
 }
 
-oop.implement(PlaceHolder.prototype, EventEmitter);
-
-exports.PlaceHolder = PlaceHolder;
+implement(PlaceHolder.prototype, EventEmitter);

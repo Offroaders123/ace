@@ -1,9 +1,8 @@
-"use strict";
+import { inherits } from "../lib/oop.js";
+import { TextHighlightRules } from "./text_highlight_rules.js";
 
-var oop = require("../lib/oop");
-var TextHighlightRules = require("./text_highlight_rules").TextHighlightRules;
-
-var AdaHighlightRules = function() {
+export class AdaHighlightRules {
+    constructor() {
 var keywords = "abort|else|new|return|abs|elsif|not|reverse|abstract|end|null|accept|entry|select|" +
 "access|exception|of|separate|aliased|exit|or|some|all|others|subtype|and|for|out|synchronized|" +
 "array|function|overriding|at|tagged|generic|package|task|begin|goto|pragma|terminate|" +
@@ -54,8 +53,7 @@ var keywords = "abort|else|new|return|abs|elsif|not|reverse|abstract|end|null|ac
             regex : "\\s+"
         } ]
     };
+}
 };
 
-oop.inherits(AdaHighlightRules, TextHighlightRules);
-
-exports.AdaHighlightRules = AdaHighlightRules;
+inherits(AdaHighlightRules, TextHighlightRules);

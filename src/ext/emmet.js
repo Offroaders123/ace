@@ -1,16 +1,15 @@
-"use strict";
-var HashHandler = require("../keyboard/hash_handler").HashHandler;
-var Editor = require("../editor").Editor;
-var snippetManager = require("../snippets").snippetManager;
-var Range = require("../range").Range;
-var config = require("../config");
+import { HashHandler } from "../keyboard/hash_handler.js";
+import { Editor } from "../editor.js";
+import { snippetManager } from "../snippets.js";
+import { Range } from "../range.js";
+import { warn, loadModule, defineOptions } from "../config.js";
 var emmet, emmetPath;
 
 /**
  * Implementation of {@link IEmmetEditor} interface for Ace
  */
 
-class AceEmmetEditor {
+export class AceEmmetEditor {
     setupContext(editor) {
         this.ace = editor;
         this.indentation = editor.session.getTabString();
@@ -314,8 +313,8 @@ var keymap = {
 };
 
 var editorProxy = new AceEmmetEditor();
-exports.commands = new HashHandler();
-exports.runEmmetCommand = function runEmmetCommand(editor) {
+export const commands = new HashHandler();
+export function runEmmetCommand(editor) {
     if (this.action == "expand_abbreviation_with_tab") {
         if (!editor.selection.isEmpty())
             return false;
@@ -338,48 +337,48 @@ exports.runEmmetCommand = function runEmmetCommand(editor) {
         var result = actions.run(this.action, editorProxy);
     } catch(e) {
         if (!emmet) {
-            var loading = exports.load(runEmmetCommand.bind(this, editor));
+            var loading = load(runEmmetCommand.bind(this, editor));
             if (this.action == "expand_abbreviation_with_tab")
                 return false;
             return loading;
         }
         editor._signal("changeStatus", typeof e == "string" ? e : e.message);
-        config.warn(e);
+        warn(e);
         result = false;
     }
     return result;
 };
 
 for (var command in keymap) {
-    exports.commands.addCommand({
+    commands.addCommand({
         name: "emmet:" + command,
         action: command,
         bindKey: keymap[command],
-        exec: exports.runEmmetCommand,
+        exec: runEmmetCommand,
         multiSelectAction: "forEach"
     });
 }
 
-exports.updateCommands = function(editor, enabled) {
+export function updateCommands(editor, enabled) {
     if (enabled) {
-        editor.keyBinding.addKeyboardHandler(exports.commands);
+        editor.keyBinding.addKeyboardHandler(commands);
     } else {
-        editor.keyBinding.removeKeyboardHandler(exports.commands);
+        editor.keyBinding.removeKeyboardHandler(commands);
     }
 };
 
-exports.isSupportedMode = function(mode) {
+export function isSupportedMode(mode) {
     if (!mode) return false;
     if (mode.emmetConfig) return true;
     var id = mode.$id || mode;
     return /css|less|scss|sass|stylus|html|php|twig|ejs|handlebars/.test(id);
 };
 
-exports.isAvailable = function(editor, command) {
+export function isAvailable(editor, command) {
     if (/(evaluate_math_expression|expand_abbreviation)$/.test(command))
         return true;
     var mode = editor.session.$mode;
-    var isSupported = exports.isSupportedMode(mode);
+    var isSupported = isSupportedMode(mode);
     if (isSupported && mode.$modes) {
         // TODO refactor mode delegates to make this simpler
         try {
@@ -395,28 +394,27 @@ var onChangeMode = function(e, target) {
     var editor = target;
     if (!editor)
         return;
-    var enabled = exports.isSupportedMode(editor.session.$mode);
+    var enabled = isSupportedMode(editor.session.$mode);
     if (e.enableEmmet === false)
         enabled = false;
     if (enabled)
-        exports.load();
-    exports.updateCommands(editor, enabled);
+        load();
+    updateCommands(editor, enabled);
 };
 
-exports.load = function(cb) {
+export function load(cb) {
     if (typeof emmetPath !== "string") {
-        config.warn("script for emmet-core is not loaded");
+        warn("script for emmet-core is not loaded");
         return false;
     }
-    config.loadModule(emmetPath, function() {
+    loadModule(emmetPath, function() {
         emmetPath = null;
         cb && cb();
     });
     return true;
 };
 
-exports.AceEmmetEditor = AceEmmetEditor;
-config.defineOptions(Editor.prototype, "editor", {
+defineOptions(Editor.prototype, "editor", {
     enableEmmet: {
         set: function(val) {
             this[val ? "on" : "removeListener"]("changeMode", onChangeMode);
@@ -426,7 +424,7 @@ config.defineOptions(Editor.prototype, "editor", {
     }
 });
 
-exports.setCore = function(e) {
+export function setCore(e) {
     if (typeof e == "string")
        emmetPath = e;
     else

@@ -1,9 +1,7 @@
-"use strict";
-
-var lang = require("../lib/lang");
+import { stringRepeat } from "../lib/lang.js";
 
 // based on http://www.freehackers.org/Indent_Finder
-exports.$detectIndentation = function(lines, fallback) {
+export function $detectIndentation(lines, fallback) {
     var stats = [];
     var changes = [];
     var tabIndents = 0;
@@ -74,9 +72,9 @@ exports.$detectIndentation = function(lines, fallback) {
         return {ch: " ", length: tabLength};
 };
 
-exports.detectIndentation = function(session) {
+export function detectIndentation(session) {
     var lines = session.getLines(0, 1000);
-    var indent = exports.$detectIndentation(lines) || {};
+    var indent = $detectIndentation(lines) || {};
 
     if (indent.ch)
         session.setUseSoftTabs(indent.ch == " ");
@@ -91,7 +89,7 @@ exports.detectIndentation = function(session) {
  * options.trimEmpty trim empty lines too
  * options.keepCursorPosition do not trim whitespace before the cursor
  */
-exports.trimTrailingSpace = function(session, options) {
+export function trimTrailingSpace(session, options) {
     var doc = session.getDocument();
     var lines = doc.getAllLines();
     
@@ -128,13 +126,13 @@ exports.trimTrailingSpace = function(session, options) {
     }
 };
 
-exports.convertIndentation = function(session, ch, len) {
+export function convertIndentation(session, ch, len) {
     var oldCh = session.getTabString()[0];
     var oldLen = session.getTabSize();
     if (!len) len = oldLen;
     if (!ch) ch = oldCh;
 
-    var tab = ch == "\t" ? ch: lang.stringRepeat(ch, len);
+    var tab = ch == "\t" ? ch: stringRepeat(ch, len);
 
     var doc = session.doc;
     var lines = doc.getAllLines();
@@ -148,8 +146,8 @@ exports.convertIndentation = function(session, ch, len) {
             var w = session.$getStringScreenWidth(match)[0];
             var tabCount = Math.floor(w/oldLen);
             var reminder = w%oldLen;
-            var toInsert = cache[tabCount] || (cache[tabCount] = lang.stringRepeat(tab, tabCount));
-            toInsert += spaceCache[reminder] || (spaceCache[reminder] = lang.stringRepeat(" ", reminder));
+            var toInsert = cache[tabCount] || (cache[tabCount] = stringRepeat(tab, tabCount));
+            toInsert += spaceCache[reminder] || (spaceCache[reminder] = stringRepeat(" ", reminder));
 
             if (toInsert != match) {
                 doc.removeInLine(i, 0, match.length);
@@ -161,7 +159,7 @@ exports.convertIndentation = function(session, ch, len) {
     session.setUseSoftTabs(ch == " ");
 };
 
-exports.$parseStringArg = function(text) {
+export function $parseStringArg(text) {
     var indent = {};
     if (/t/.test(text))
         indent.ch = "\t";
@@ -173,41 +171,41 @@ exports.$parseStringArg = function(text) {
     return indent;
 };
 
-exports.$parseArg = function(arg) {
+export function $parseArg(arg) {
     if (!arg)
         return {};
     if (typeof arg == "string")
-        return exports.$parseStringArg(arg);
+        return $parseStringArg(arg);
     if (typeof arg.text == "string")
-        return exports.$parseStringArg(arg.text);
+        return $parseStringArg(arg.text);
     return arg;
 };
 
-exports.commands = [{
+export const commands = [{
     name: "detectIndentation",
     description: "Detect indentation from content",
     exec: function(editor) {
-        exports.detectIndentation(editor.session);
+        detectIndentation(editor.session);
         // todo show message?
     }
 }, {
     name: "trimTrailingSpace",
     description: "Trim trailing whitespace",
     exec: function(editor, args) {
-        exports.trimTrailingSpace(editor.session, args);
+        trimTrailingSpace(editor.session, args);
     }
 }, {
     name: "convertIndentation",
     description: "Convert indentation to ...",
     exec: function(editor, arg) {
-        var indent = exports.$parseArg(arg);
-        exports.convertIndentation(editor.session, indent.ch, indent.length);
+        var indent = $parseArg(arg);
+        convertIndentation(editor.session, indent.ch, indent.length);
     }
 }, {
     name: "setIndentation",
     description: "Set indentation",
     exec: function(editor, arg) {
-        var indent = exports.$parseArg(arg);
+        var indent = $parseArg(arg);
         indent.length && editor.session.setTabSize(indent.length);
         indent.ch && editor.session.setUseSoftTabs(indent.ch == " ");
     }

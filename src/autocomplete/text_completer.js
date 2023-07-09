@@ -1,4 +1,4 @@
-var Range = require("../range").Range;
+import { Range } from "../range.js";
 
 var splitRegex = /[^a-zA-Z_0-9\$\-\u00C0-\u1FFF\u2C00-\uD7FF\w]+/;
 
@@ -36,7 +36,7 @@ function wordDistance(doc, pos) {
     return wordScores;
 }
 
-exports.getCompletions = function (editor, session, pos, prefix, callback) {
+export function getCompletions (editor, session, pos, prefix, callback) {
     var wordScore = wordDistance(session, pos);
     var wordList = Object.keys(wordScore);
     callback(null, wordList.map(function (word) {

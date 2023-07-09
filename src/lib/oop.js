@@ -1,6 +1,4 @@
-"use strict";
-
-exports.inherits = function(ctor, superCtor) {
+export function inherits(ctor, superCtor) {
     ctor.super_ = superCtor;
     ctor.prototype = Object.create(superCtor.prototype, {
         constructor: {
@@ -12,13 +10,13 @@ exports.inherits = function(ctor, superCtor) {
     });
 };
 
-exports.mixin = function(obj, mixin) {
+export function mixin(obj, mixin) {
     for (var key in mixin) {
         obj[key] = mixin[key];
     }
     return obj;
 };
 
-exports.implement = function(proto, mixin) {
-    exports.mixin(proto, mixin);
+export function implement(proto, mixin) {
+    mixin(proto, mixin);
 };

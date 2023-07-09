@@ -1,7 +1,5 @@
-"use strict";
-
-var oop = require("./lib/oop");
-var EventEmitter = require("./lib/event_emitter").EventEmitter;
+import { implement } from "./lib/oop.js";
+import { EventEmitter } from "./lib/event_emitter.js";
 
 
 /**
@@ -9,7 +7,7 @@ var EventEmitter = require("./lib/event_emitter").EventEmitter;
  * 
  * If a certain row is changed, everything below that row is re-tokenized.
  **/
-class BackgroundTokenizer {
+export class BackgroundTokenizer {
     
     /**
      * Creates a new `BackgroundTokenizer` object.
@@ -210,6 +208,4 @@ class BackgroundTokenizer {
 
 }
 
-oop.implement(BackgroundTokenizer.prototype, EventEmitter);
-
-exports.BackgroundTokenizer = BackgroundTokenizer;
+implement(BackgroundTokenizer.prototype, EventEmitter);

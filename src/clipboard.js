@@ -1,14 +1,10 @@
-"use strict";
-
 var $cancelT;
-module.exports = { 
-    lineMode: false,
-    pasteCancelled: function() {
+export const lineMode = false;
+export function pasteCancelled() {
         if ($cancelT && $cancelT > Date.now() - 50)
             return true;
         return $cancelT = false;
-    },
-    cancel: function() {
+}
+export function cancel() {
         $cancelT = Date.now();
-    }
 };

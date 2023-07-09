@@ -1,24 +1,25 @@
-var oop = require("../lib/oop");
-var dom = require("../lib/dom");
-var lang = require("../lib/lang");
-var event = require("../lib/event");
-var useragent = require("../lib/useragent");
-var EventEmitter = require("../lib/event_emitter").EventEmitter;
+import { implement } from "../lib/oop.js";
+import { createElement, buildDom } from "../lib/dom.js";
+import { stringRepeat } from "../lib/lang.js";
+import { onIdle } from "../lib/event.js";
+import { isIE } from "../lib/useragent.js";
+import { EventEmitter } from "../lib/event_emitter.js";
 
 var CHAR_COUNT = 512;
 var USE_OBSERVER = typeof ResizeObserver == "function";
 var L = 200;
 
-class FontMetrics {
-    
+export class FontMetrics {
+    $characterSize = {width: 0, height: 0};
+
     constructor(parentEl) {
-        this.el = dom.createElement("div");
+        this.el = createElement("div");
         this.$setMeasureNodeStyles(this.el.style, true);
 
-        this.$main = dom.createElement("div");
+        this.$main = createElement("div");
         this.$setMeasureNodeStyles(this.$main.style);
 
-        this.$measureNode = dom.createElement("div");
+        this.$measureNode = createElement("div");
         this.$setMeasureNodeStyles(this.$measureNode.style);
 
 
@@ -26,7 +27,7 @@ class FontMetrics {
         this.el.appendChild(this.$measureNode);
         parentEl.appendChild(this.el);
 
-        this.$measureNode.textContent = lang.stringRepeat("X", CHAR_COUNT);
+        this.$measureNode.textContent = stringRepeat("X", CHAR_COUNT);
 
         this.$characterSize = {width: 0, height: 0};
 
@@ -44,7 +45,7 @@ class FontMetrics {
         style.position = "absolute";
         style.whiteSpace = "pre";
 
-        if (useragent.isIE < 8) {
+        if (isIE < 8) {
             style["font-family"] = "inherit";
         } else {
             style.font = "inherit";
@@ -80,9 +81,9 @@ class FontMetrics {
             return this.$pollSizeChangesTimer;
         var self = this;
         
-        return this.$pollSizeChangesTimer = event.onIdle(function cb() {
+        return this.$pollSizeChangesTimer = onIdle(function cb() {
             self.checkForSizeChanges();
-            event.onIdle(cb, 500);
+            onIdle(cb, 500);
         }, 500);
     }
     
@@ -109,7 +110,7 @@ class FontMetrics {
     }
 
     $measureCharWidth(ch) {
-        this.$main.textContent = lang.stringRepeat(ch, CHAR_COUNT);
+        this.$main.textContent = stringRepeat(ch, CHAR_COUNT);
         var rect = this.$main.getBoundingClientRect();
         return rect.width / CHAR_COUNT;
     }
@@ -142,7 +143,7 @@ class FontMetrics {
                 style: "position: absolute;top:" + t + "px;left:" + l + "px;"
             }];
         };
-        this.els = dom.buildDom([t(0, 0), t(L, 0), t(0, L), t(L, L)], this.el);
+        this.els = buildDom([t(0, 0), t(L, 0), t(0, L), t(L, L)], this.el);
     }
     // general transforms from element coordinates x to screen coordinates u have the form
     // | m1[0] m2[0] t[0] |   | x |       | u |
@@ -196,8 +197,5 @@ class FontMetrics {
     }
     
 }
-FontMetrics.prototype.$characterSize = {width: 0, height: 0};
 
-oop.implement(FontMetrics.prototype, EventEmitter);
-
-exports.FontMetrics = FontMetrics;
+implement(FontMetrics.prototype, EventEmitter);

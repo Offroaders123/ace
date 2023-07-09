@@ -1,8 +1,6 @@
-"use strict";
+import { Range } from "../range.js";
 
-var Range = require("../range").Range;
-
-function hardWrap(editor, options) {
+export function hardWrap(editor, options) {
     var max = options.column || editor.getOption("printMarginColumn");
     var allowMerge = options.allowMerge != false;
        
@@ -98,7 +96,7 @@ function wrapAfterInput(e) {
     }
 }
 
-var Editor = require("../editor").Editor;
+import { Editor } from "../editor.js";
 require("../config").defineOptions(Editor.prototype, "editor", {
     hardWrap: {
         set: function(val) {
@@ -111,5 +109,3 @@ require("../config").defineOptions(Editor.prototype, "editor", {
         value: false
     }
 });
-
-exports.hardWrap = hardWrap;

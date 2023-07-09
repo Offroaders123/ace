@@ -7,12 +7,11 @@
  * " Last Change: 2012 Oct 23
  */
 
-"use strict";
+import { inherits } from "../lib/oop.js";
+import { TextHighlightRules } from "./text_highlight_rules.js";
 
-var oop = require("../lib/oop");
-var TextHighlightRules = require("./text_highlight_rules").TextHighlightRules;
-
-var AbapHighlightRules = function() {
+export class AbapHighlightRules {
+    constructor() {
 
     var keywordMapper = this.createKeywordMapper({
         "variable.language": "this",
@@ -96,7 +95,6 @@ var AbapHighlightRules = function() {
             {defaultToken : "string"}
         ]
     };
+}
 };
-oop.inherits(AbapHighlightRules, TextHighlightRules);
-
-exports.AbapHighlightRules = AbapHighlightRules;
+inherits(AbapHighlightRules, TextHighlightRules);

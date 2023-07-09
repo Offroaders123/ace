@@ -10,8 +10,7 @@
  *  ☭ Hial Atropa!! ☭
  */
 
-"use strict";
-var keys = require("../../lib/keys");
+import { KEY_MODS } from "../../lib/keys.js";
 
 /**
  * Gets a map of keyboard shortcuts to command names for the current platform.
@@ -29,8 +28,7 @@ var keys = require("../../lib/keys");
  * //     {'command' : aCommand, 'key' : 'Control-d'}
  * // ]
  */
-module.exports.getEditorKeybordShortcuts = function(editor) {
-    var KEY_MODS = keys.KEY_MODS;
+export function getEditorKeybordShortcuts(editor) {
     var keybindings = [];
     var commandMap = {};
     editor.keyBinding.$handlers.forEach(function(handler) {

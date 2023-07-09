@@ -1,4 +1,4 @@
-module.exports = `.ace-chrome .ace_gutter {
+export default `.ace-chrome .ace_gutter {
   background: #ebebeb;
   color: #333;
   overflow : hidden;

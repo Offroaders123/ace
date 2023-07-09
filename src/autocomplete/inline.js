@@ -1,11 +1,9 @@
-"use strict";
-
-var snippetManager = require("../snippets").snippetManager;
+import { snippetManager } from "../snippets.js";
 
 /**
  * This object is used to manage inline code completions rendered into an editor with ghost text.
  */
-class AceInline {
+export class AceInline {
     /**
      * Creates the inline completion renderer which renders the inline code completions directly in the target editor.
      */
@@ -63,6 +61,3 @@ class AceInline {
         this.editor = null;
     }
 }
-
-
-exports.AceInline = AceInline;

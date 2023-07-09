@@ -1,18 +1,16 @@
-"use strict";
+import { VirtualRenderer as Renderer } from "../virtual_renderer.js";
+import { Editor } from "../editor.js";
+import { Range } from "../range.js";
+import { addListener } from "../lib/event.js";
+import { stringRepeat } from "../lib/lang.js";
+import { createElement, removeCssClass, addCssClass, importCssString } from "../lib/dom.js";
+import { nls } from "../config.js";
 
-var Renderer = require("../virtual_renderer").VirtualRenderer;
-var Editor = require("../editor").Editor;
-var Range = require("../range").Range;
-var event = require("../lib/event");
-var lang = require("../lib/lang");
-var dom = require("../lib/dom");
-var nls = require("../config").nls;
-
-var getAriaId = function(index) {
+export var getAriaId = function(index) {
     return `suggest-aria-id:${index}`;
 };
 
-var $singleLineEditor = function(el) {
+export var $singleLineEditor = function(el) {
     var renderer = new Renderer(el);
 
     renderer.$maxLines = 4;
@@ -33,13 +31,13 @@ var $singleLineEditor = function(el) {
 /**
  * This object is used in some places where needed to show popups - like prompt; autocomplete etc.
  */
-class AcePopup {
+export class AcePopup {
     /**
      * Creates and renders single line editor in popup window. If `parentNode` param is isset, then attaching it to this element.
      * @param {Element} parentNode
      */
     constructor(parentNode) {
-        var el = dom.createElement("div");
+        var el = createElement("div");
         var popup = new $singleLineEditor(el);
 
         if (parentNode) {
@@ -125,13 +123,13 @@ class AcePopup {
             var selected = t.element.childNodes[row - t.config.firstRow];
             var el = document.activeElement; // Active element is textarea of main editor
             if (selected !== t.selectedNode && t.selectedNode) {
-                dom.removeCssClass(t.selectedNode, "ace_selected");
+                removeCssClass(t.selectedNode, "ace_selected");
                 el.removeAttribute("aria-activedescendant");
                 t.selectedNode.removeAttribute("id");
             }
             t.selectedNode = selected;
             if (selected) {
-                dom.addCssClass(selected, "ace_selected");
+                addCssClass(selected, "ace_selected");
                 var ariaId = getAriaId(row);
                 selected.id = ariaId;
                 t.element.setAttribute("aria-activedescendant", ariaId);
@@ -156,7 +154,7 @@ class AcePopup {
             return hoverMarker.start.row;
         };
 
-        event.addListener(popup.container, "mouseout", hideHoverMarker);
+        addListener(popup.container, "mouseout", hideHoverMarker);
         popup.on("hide", hideHoverMarker);
         popup.on("changeSelection", hideHoverMarker);
 
@@ -228,7 +226,7 @@ class AcePopup {
         popup.data = [];
         popup.setData = function(list, filterText) {
             popup.filterText = filterText || "";
-            popup.setValue(lang.stringRepeat("\n", list.length), -1);
+            popup.setValue(stringRepeat("\n", list.length), -1);
             popup.data = list || [];
             popup.setRow(0);
         };
@@ -390,7 +388,7 @@ class AcePopup {
     }
 } 
 
-dom.importCssString(`
+importCssString(`
 .ace_editor.ace_autocomplete .ace_marker-layer .ace_active-line {
     background-color: #CAD6FA;
     z-index: 1;
@@ -460,7 +458,3 @@ dom.importCssString(`
     flex: 1;
 }
 `, "autocompletion.css", false);
-
-exports.AcePopup = AcePopup;
-exports.$singleLineEditor = $singleLineEditor;
-exports.getAriaId = getAriaId;

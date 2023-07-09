@@ -1,11 +1,9 @@
-"use strict";
-
-var Range = require("./range").Range;
+import { Range } from "./range.js";
 
 /**
  * This class provides an essay way to treat the document as a stream of tokens, and provides methods to iterate over these tokens.
  **/
-class TokenIterator {
+export class TokenIterator {
     /**
      * Creates a new token iterator object. The inital token index is set to the provided row and column coordinates.
      * @param {EditSession} session The session to associate with
@@ -125,5 +123,3 @@ class TokenIterator {
     }
     
 }
-
-exports.TokenIterator = TokenIterator;

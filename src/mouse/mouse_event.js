@@ -1,12 +1,10 @@
-"use strict";
-
-var event = require("../lib/event");
-var useragent = require("../lib/useragent");
+import { stopPropagation, preventDefault, getButton } from "../lib/event.js";
+import { isMac } from "../lib/useragent.js";
 
 /*
  * Custom Ace mouse event
  */
-class MouseEvent {
+export class MouseEvent {
     constructor(domEvent, editor) {
         this.domEvent = domEvent;
         this.editor = editor;
@@ -22,12 +20,12 @@ class MouseEvent {
     }
     
     stopPropagation() {
-        event.stopPropagation(this.domEvent);
+        stopPropagation(this.domEvent);
         this.propagationStopped = true;
     }
     
     preventDefault() {
-        event.preventDefault(this.domEvent);
+        preventDefault(this.domEvent);
         this.defaultPrevented = true;
     }
     
@@ -90,7 +88,7 @@ class MouseEvent {
      * @return {Number} 0 for left button, 1 for middle button, 2 for right button
      */
     getButton() {
-        return event.getButton(this.domEvent);
+        return getButton(this.domEvent);
     }
     
     /**
@@ -101,8 +99,6 @@ class MouseEvent {
     }
 
     getAccelKey() {
-        return useragent.isMac ? this.domEvent.metaKey : this.domEvent.ctrlKey;
+        return isMac ? this.domEvent.metaKey : this.domEvent.ctrlKey;
     }
 }
-
-exports.MouseEvent = MouseEvent;

@@ -1,8 +1,6 @@
-"use strict";
-
-var lang = require("../lib/lang");
-var config = require("../config");
-var Range = require("../range").Range;
+import * as lang from "../lib/lang.js";
+import * as config from "../config.js";
+import { Range } from "../range.js";
 
 function bindKey(win, mac) {
     return {win: win, mac: mac};
@@ -12,7 +10,7 @@ function bindKey(win, mac) {
     multiSelectAction: "forEach"|"forEachLine"|function|undefined,
     scrollIntoView: true|"cursor"|"center"|"selectionPart"
 */
-exports.commands = [{
+export const commands = [{
     name: "showSettingsMenu",
     description: "Show settings menu",
     bindKey: bindKey("Ctrl-,", "Command-,"),

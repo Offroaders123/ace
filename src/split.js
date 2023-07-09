@@ -1,20 +1,17 @@
-"use strict";
+import { implement } from "./lib/oop.js";
+import * as lang from "./lib/lang.js";
+import { EventEmitter } from "./lib/event_emitter.js";
 
-var oop = require("./lib/oop");
-var lang = require("./lib/lang");
-var EventEmitter = require("./lib/event_emitter").EventEmitter;
-
-var Editor = require("./editor").Editor;
-var Renderer = require("./virtual_renderer").VirtualRenderer;
-var EditSession = require("./edit_session").EditSession;
+import { Editor } from "./editor.js";
+import { VirtualRenderer as Renderer } from "./virtual_renderer.js";
+import { EditSession } from "./edit_session.js";
 
 /** 
  * @class Split
  *
  **/
-
-
-var Split = function(container, theme, splits) {
+export class Split {
+    constructor(container, theme, splits) {
     this.BELOW = 1;
     this.BESIDE = 0;
 
@@ -32,11 +29,12 @@ var Split = function(container, theme, splits) {
     this.on("focus", function(editor) {
         this.$cEditor = editor;
     }.bind(this));
+    }
 };
 
 (function(){
 
-    oop.implement(this, EventEmitter);
+    implement(this, EventEmitter);
 
     this.$createEditor = function() {
         var el = document.createElement("div");
@@ -290,5 +288,3 @@ var Split = function(container, theme, splits) {
     };
 
 }).call(Split.prototype);
-
-exports.Split = Split;

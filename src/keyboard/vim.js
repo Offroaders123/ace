@@ -60,21 +60,22 @@
     }
     console.log(d);
   }
-  var Range = require("../range").Range;
-  var EventEmitter = require("../lib/event_emitter").EventEmitter;
-  var domLib = require("../lib/dom");
-  var oop = require("../lib/oop");
-  var KEYS = require("../lib/keys");
-  var event = require("../lib/event");
-  var Search = require("../search").Search;
-  var useragent = require("../lib/useragent");
-  var SearchHighlight = require("../search_highlight").SearchHighlight;
-  var multiSelectCommands = require("../commands/multi_select_commands");
-  var TextModeTokenRe = require("../mode/text").Mode.prototype.tokenRe;
-  var hardWrap = require("../ext/hardwrap").hardWrap;
-  require("../multi_select");
+  import { Range } from "../range.js";
+  import { EventEmitter } from "../lib/event_emitter.js";
+  import { importCssString, translate, setStyle } from "../lib/dom.js";
+  import { implement } from "../lib/oop.js";
+  import KEYS from "../lib/keys.js";
+  import { stopEvent, getModifierString, addListener, removeListener } from "../lib/event.js";
+  import { Search } from "../search.js";
+  import { isMac } from "../lib/useragent.js";
+  import { SearchHighlight } from "../search_highlight.js";
+  import { keyboardHandler } from "../commands/multi_select_commands.js";
+  import { Mode } from "../mode/text.js";
+  const TextModeTokenRe = Mode.prototype.tokenRe;
+  import { hardWrap } from "../ext/hardwrap.js";
+  import "../multi_select.js";
 
-  var CodeMirror = function(ace) {
+  export var CodeMirror = function(ace) {
     this.ace = ace;
     this.state = {};
     this.marks = {};
@@ -101,11 +102,11 @@
   };
   CodeMirror.keyMap = {};
   CodeMirror.addClass = CodeMirror.rmClass = function() {};
-  CodeMirror.e_stop = CodeMirror.e_preventDefault = event.stopEvent;
+  CodeMirror.e_stop = CodeMirror.e_preventDefault = stopEvent;
   CodeMirror.keyName = function(e) {
     var key = (KEYS[e.keyCode] || e.key || "");
     if (key.length == 1) key = key.toUpperCase();
-    key = event.getModifierString(e).replace(/(^|-)\w/g, function(m) {
+    key = getModifierString(e).replace(/(^|-)\w/g, function(m) {
       return m.toUpperCase();
     }) + key;
     return key;
@@ -145,8 +146,8 @@
   };
 
   CodeMirror.signal = function(o, name, e) { return o._signal(name, e) };
-  CodeMirror.on = event.addListener;
-  CodeMirror.off = event.removeListener;
+  CodeMirror.on = addListener;
+  CodeMirror.off = removeListener;
   CodeMirror.isWordChar = function(ch) {
     if (ch < "\x7f") return /^\w$/.test(ch);
     TextModeTokenRe.lastIndex = 0;
@@ -154,7 +155,7 @@
   };
 
 (function() {
-  oop.implement(CodeMirror.prototype, EventEmitter);
+  implement(CodeMirror.prototype, EventEmitter);
 
   this.destroy = function() {
     this.ace.off('change', this.onChange);
@@ -183,7 +184,7 @@
       curOp.cursorActivityHandlers = this._eventRegistry["cursorActivity"] && this._eventRegistry["cursorActivity"].slice();
     this.curOp.cursorActivity = true;
     if (this.ace.inMultiSelectMode) {
-      this.ace.keyBinding.removeKeyboardHandler(multiSelectCommands.keyboardHandler);
+      this.ace.keyBinding.removeKeyboardHandler(keyboardHandler);
     }
   };
   this.operation = function(fn, force) {
@@ -758,7 +759,7 @@
 CodeMirror.defineExtension = function(name, fn) {
   CodeMirror.prototype[name] = fn;
 };
-domLib.importCssString(`.normal-mode .ace_cursor{
+importCssString(`.normal-mode .ace_cursor{
     border: none;
     background-color: rgba(255,0,0,0.5);
 }
@@ -6970,9 +6971,8 @@ domLib.importCssString(`.normal-mode .ace_cursor{
     }
     return isHandled;
   }
-  exports.CodeMirror = CodeMirror;
   var getVim = vimApi.maybeInitVimState_;
-  exports.handler = {
+export const handler = {
     $id: "ace/keyboard/vim",
     drawCursor: function(element, pixelPos, config, sel, session) {
       var vim = this.state.vim || {};
@@ -6991,9 +6991,9 @@ domLib.importCssString(`.normal-mode .ace_cursor{
         h = h / 2;
         top += h;
       }
-      domLib.translate(element, left, top);
-      domLib.setStyle(element.style, "width", w + "px");
-      domLib.setStyle(element.style, "height", h + "px");
+      translate(element, left, top);
+      setStyle(element.style, "width", w + "px");
+      setStyle(element.style, "height", h + "px");
     },
     $getDirectionForHighlight: function (editor) {
       var cm = editor.state.cm;
@@ -7045,7 +7045,7 @@ domLib.importCssString(`.normal-mode .ace_cursor{
 
       // ctrl-c is special it both exits mode and copies text
       if (key == "c" && hashId == 1) { // key == "ctrl-c"
-        if (!useragent.isMac && editor.getCopyText()) {
+        if (!isMac && editor.getCopyText()) {
           editor.once("copy", function() {
             if (vim.insertMode) editor.selection.clearSelection();
             else cm.operation(function() { exitVisualMode(cm); });
@@ -7218,6 +7218,6 @@ domLib.importCssString(`.normal-mode .ace_cursor{
       ][(actionArgs.all ? 2 : 0) + (actionArgs.open ? 1 : 0)]);
   };
 
-  exports.handler.defaultKeymap = defaultKeymap;
-  exports.handler.actions = actions;
-  exports.Vim = vimApi;
+  handler.defaultKeymap = defaultKeymap;
+  handler.actions = actions;
+  export const Vim = vimApi;

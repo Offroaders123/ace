@@ -1,9 +1,7 @@
-"use strict";
-var Range = require("./range").Range;
-var comparePoints = Range.comparePoints;
+import { Range } from "./range.js";
 
-class RangeList {
-    
+export class RangeList {
+    comparePoints = Range.comparePoints;
     constructor() {
         this.ranges = [];
         this.$bias = 1;
@@ -261,7 +259,3 @@ class RangeList {
     }
 
 }
-
-RangeList.prototype.comparePoints = comparePoints;
-
-exports.RangeList = RangeList;

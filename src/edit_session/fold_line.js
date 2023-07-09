@@ -1,8 +1,6 @@
-"use strict";
+import { Range } from "../range.js";
 
-var Range = require("../range").Range;
-
-class FoldLine {
+export class FoldLine {
     /**
      * If an array is passed in, the folds are expected to be sorted already.
      */
@@ -232,5 +230,3 @@ class FoldLine {
         };
     }
 }
-
-exports.FoldLine = FoldLine;

@@ -1,5 +1,3 @@
-"use strict";
-
 var commands = [{
     name: "leftToRight",
     bindKey: { win: "Ctrl-Alt-Shift-L", mac: "Command-Alt-Shift-L" },
@@ -16,7 +14,7 @@ var commands = [{
     readOnly: true
 }];
 
-var Editor = require("../editor").Editor;
+import { Editor } from "../editor.js";
 require("../config").defineOptions(Editor.prototype, "editor", {
     rtlText: {
         set: function(val) {

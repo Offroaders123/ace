@@ -1,10 +1,8 @@
-"use strict";
+import { MouseEvent } from "./mouse_event.js";
+import { addListener } from "../lib/event.js";
+import { buildDom } from "../lib/dom.js";
 
-var MouseEvent = require("./mouse_event").MouseEvent;
-var event = require("../lib/event");
-var dom = require("../lib/dom");
-
-exports.addTouchListeners = function(el, editor) {
+export function addTouchListeners(el, editor) {
     var mode = "scroll";
     var startX;
     var startY;
@@ -27,7 +25,7 @@ exports.addTouchListeners = function(el, editor) {
             var selected = editor.getCopyText();
             var hasUndo = editor.session.getUndoManager().hasUndo();
             contextMenu.replaceChild(
-                dom.buildDom(isOpen ? ["span",
+                buildDom(isOpen ? ["span",
                     !selected && ["span", { class: "ace_mobile-button", action: "selectall" }, "Select All"],
                     selected && ["span", { class: "ace_mobile-button", action: "copy" }, "Copy"],
                     selected && ["span", { class: "ace_mobile-button", action: "cut" }, "Cut"],
@@ -65,7 +63,7 @@ exports.addTouchListeners = function(el, editor) {
             if (action != "openCommandPallete")
                 editor.focus();
         };
-        contextMenu = dom.buildDom(["div",
+        contextMenu = buildDom(["div",
             {
                 class: "ace_mobile-menu",
                 ontouchstart: function(e) {
@@ -136,12 +134,12 @@ exports.addTouchListeners = function(el, editor) {
         }
         mode = "wait";
     }
-    event.addListener(el, "contextmenu", function(e) {
+    addListener(el, "contextmenu", function(e) {
         if (!pressed) return;
         var textarea = editor.textInput.getElement();
         textarea.focus();
     }, editor);
-    event.addListener(el, "touchstart", function (e) {
+    addListener(el, "touchstart", function (e) {
         var touches = e.touches;
         if (longTouchTimer || touches.length > 1) {
             clearTimeout(longTouchTimer);
@@ -218,7 +216,7 @@ exports.addTouchListeners = function(el, editor) {
         touchStartT = t;
     }, editor);
 
-    event.addListener(el, "touchend", function (e) {
+    addListener(el, "touchend", function (e) {
         pressed = editor.$mouseHandler.isMousePressed = false;
         if (animationTimer) clearInterval(animationTimer);
         if (mode == "zoom") {
@@ -237,7 +235,7 @@ exports.addTouchListeners = function(el, editor) {
         clearTimeout(longTouchTimer);
         longTouchTimer = null;
     }, editor);
-    event.addListener(el, "touchmove", function (e) {
+    addListener(el, "touchmove", function (e) {
         if (longTouchTimer) {
             clearTimeout(longTouchTimer);
             longTouchTimer = null;

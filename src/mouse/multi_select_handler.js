@@ -1,12 +1,12 @@
-var event = require("../lib/event");
-var useragent = require("../lib/useragent");
+import { capture } from "../lib/event.js";
+import { isMac } from "../lib/useragent.js";
 
 // mouse
 function isSamePoint(p1, p2) {
     return p1.row == p2.row && p1.column == p2.column;
 }
 
-function onMouseDown(e) {
+export function onMouseDown(e) {
     var ev = e.domEvent;
     var alt = ev.altKey;
     var shift = ev.shiftKey;
@@ -14,7 +14,7 @@ function onMouseDown(e) {
     var accel = e.getAccelKey();
     var button = e.getButton();
     
-    if (ctrl && useragent.isMac)
+    if (ctrl && isMac)
         button = ev.button;
 
     if (e.editor.inMultiSelectMode && button == 2) {
@@ -64,7 +64,7 @@ function onMouseDown(e) {
         }
     }
     
-    if (selectionMode && useragent.isMac && ev.ctrlKey) {
+    if (selectionMode && isMac && ev.ctrlKey) {
         editor.$mouseHandler.cancelContextMenu();
     }
 
@@ -158,12 +158,9 @@ function onMouseDown(e) {
 
         var onSelectionInterval = blockSelect;
 
-        event.capture(editor.container, onMouseSelection, onMouseSelectionEnd);
+        capture(editor.container, onMouseSelection, onMouseSelectionEnd);
         var timerId = setInterval(function() {onSelectionInterval();}, 20);
 
         return e.preventDefault();
     }
 }
-
-
-exports.onMouseDown = onMouseDown;

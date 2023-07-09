@@ -1,7 +1,5 @@
-"use strict";
-
-var HashHandler = require("./hash_handler").HashHandler;
-exports.handler = new HashHandler();
+import { HashHandler } from "./hash_handler.js";
+export const handler = new HashHandler();
 
 [{
     bindKey: "Shift-Tab|Tab",
@@ -49,7 +47,7 @@ exports.handler = new HashHandler();
 ].forEach(function(k) {
     var bindKey = k.bindKey;
     if (typeof bindKey == "object")
-        bindKey = bindKey[exports.handler.platform];
-    exports.handler.bindKey(bindKey, k.command);
+        bindKey = bindKey[handler.platform];
+    handler.bindKey(bindKey, k.command);
 });
-exports.handler.$id = "ace/keyboard/textarea";
+handler.$id = "ace/keyboard/textarea";

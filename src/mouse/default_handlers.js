@@ -1,11 +1,9 @@
-"use strict";
-
-var useragent = require("../lib/useragent");
+import { isMozilla } from "../lib/useragent.js";
 
 var DRAG_OFFSET = 0; // pixels
 var SCROLL_COOLDOWN_T = 550; // milliseconds
 
-class DefaultHandlers {
+export class DefaultHandlers {
     constructor(mouseHandler) {
         mouseHandler.$clickSelection = null;
 
@@ -42,7 +40,7 @@ class DefaultHandlers {
             // 2: contextmenu, 1: linux paste
             if (button == 2) {
                 editor.textInput.onContextMenu(ev.domEvent);
-                if (!useragent.isMozilla)
+                if (!isMozilla)
                     ev.preventDefault();
             }
             // stopping event here breaks contextmenu on ff mac
@@ -253,8 +251,6 @@ class DefaultHandlers {
 DefaultHandlers.prototype.selectEnd = DefaultHandlers.prototype.selectByLinesEnd;
 DefaultHandlers.prototype.selectAllEnd = DefaultHandlers.prototype.selectByLinesEnd;
 DefaultHandlers.prototype.selectByWordsEnd = DefaultHandlers.prototype.selectByLinesEnd;
-
-exports.DefaultHandlers = DefaultHandlers;
 
 function calcDistance(ax, ay, bx, by) {
     return Math.sqrt(Math.pow(bx - ax, 2) + Math.pow(by - ay, 2));

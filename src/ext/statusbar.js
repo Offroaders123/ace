@@ -1,17 +1,15 @@
-"use strict";
-
-var dom = require("../lib/dom");
-var lang = require("../lib/lang");
+import { createElement } from "../lib/dom.js";
+import { delayedCall } from "../lib/lang.js";
 
 /** simple statusbar **/
-class StatusBar{
+export class StatusBar{
     constructor(editor, parentNode) {
-        this.element = dom.createElement("div");
+        this.element = createElement("div");
         this.element.className = "ace_status-indicator";
         this.element.style.cssText = "display: inline-block;";
         parentNode.appendChild(this.element);
 
-        var statusUpdate = lang.delayedCall(function(){
+        var statusUpdate = delayedCall(function(){
             this.updateStatus(editor);
         }.bind(this)).schedule.bind(null, 100);
 
@@ -44,5 +42,3 @@ class StatusBar{
         this.element.textContent = status.join("");
     }
 }
-
-exports.StatusBar = StatusBar;

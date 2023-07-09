@@ -1,8 +1,10 @@
 "use strict";
 
-  exports.isDark = false;
-  exports.cssClass = "ace-cloud9-day";
-  exports.cssText = require("./cloud9_day-css");
+export const isDark = false;
+export const cssClass = "ace-cloud9-day";
+import cssText from "./cloud9_day-css.js";
 
-  var dom = require("../lib/dom");
-  dom.importCssString(exports.cssText, exports.cssClass);
+export { cssText };
+
+  import { importCssString } from "../lib/dom.js";
+  importCssString(cssText, cssClass);

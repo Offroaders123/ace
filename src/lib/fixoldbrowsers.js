@@ -10,6 +10,4 @@
     MIT License. http://github.com/280north/narwhal/blob/master/README.md
 */
 
-"use strict";
-
-require("./es6-shim");
+import "./es6-shim";

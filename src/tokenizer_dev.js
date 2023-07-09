@@ -1,4 +1,4 @@
-var BaseTokenizer = require("./tokenizer").Tokenizer;
+import { Tokenizer as BaseTokenizer } from "./tokenizer.js";
 
 // tokenizing lines longer than this makes editor very slow
 var MAX_TOKEN_COUNT = 2000;
@@ -8,7 +8,7 @@ var MAX_TOKEN_COUNT = 2000;
  * can be used for developing/testing new modes
  **/
 
-class Tokenizer extends BaseTokenizer {
+export class Tokenizer extends BaseTokenizer {
     
     /**
      * Returns an object containing two properties: `tokens`, which contains all the tokens; and `state`, the current state.
@@ -147,6 +147,5 @@ class Tokenizer extends BaseTokenizer {
 
 }
 
+// @ts-expect-error - Not necessary is it?
 Tokenizer.prototype = BaseTokenizer.prototype;
-
-exports.Tokenizer = Tokenizer;

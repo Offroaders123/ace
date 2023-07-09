@@ -20,21 +20,19 @@
  * @param {Function} callback               Function called after done.
  * */
 
-"use strict";
-
-var nls = require("../config").nls;
-var Range = require("../range").Range;
-var dom = require("../lib/dom");
-var FilteredList= require("../autocomplete").FilteredList;
-var AcePopup = require('../autocomplete/popup').AcePopup;
-var $singleLineEditor = require('../autocomplete/popup').$singleLineEditor;
-var UndoManager = require("../undomanager").UndoManager;
-var Tokenizer = require("../tokenizer").Tokenizer;
-var overlayPage = require("./menu_tools/overlay_page").overlayPage;
-var modelist = require("./modelist");
+import { nls } from "../config.js";
+import { Range } from "../range.js";
+import { buildDom, importCssString } from "../lib/dom.js";
+import { FilteredList } from "../autocomplete.js";
+import { AcePopup } from '../autocomplete/popup.js';
+import { $singleLineEditor } from '../autocomplete/popup.js';
+import { UndoManager } from "../undomanager.js";
+import { Tokenizer } from "../tokenizer.js";
+import { overlayPage } from "./menu_tools/overlay_page.js";
+import { modes as _modes } from "./modelist.js";
 var openPrompt;
 
-function prompt(editor, message, options, callback) {
+export function prompt(editor, message, options, callback) {
     if (typeof message == "object") {
         return prompt(editor, "", message, options);
     }
@@ -51,7 +49,7 @@ function prompt(editor, message, options, callback) {
     var cmdLine = $singleLineEditor();
     cmdLine.session.setUndoManager(new UndoManager());
 
-    var el = dom.buildDom(["div", {class: "ace_prompt_container" + (options.hasDescription ? " input-box-with-description" : "")}]);
+    var el = buildDom(["div", {class: "ace_prompt_container" + (options.hasDescription ? " input-box-with-description" : "")}]);
     var overlay = overlayPage(editor, el, done);
     el.appendChild(cmdLine.container);
 
@@ -102,8 +100,8 @@ function prompt(editor, message, options, callback) {
     }
 
     if (options.hasDescription) {
-        var promptTextContainer = dom.buildDom(["div", {class: "ace_prompt_text_container"}]);
-        dom.buildDom(options.prompt || "Press 'Enter' to confirm or 'Escape' to cancel", promptTextContainer);
+        var promptTextContainer = buildDom(["div", {class: "ace_prompt_text_container"}]);
+        buildDom(options.prompt || "Press 'Enter' to confirm or 'Escape' to cancel", promptTextContainer);
         el.appendChild(promptTextContainer);
     }
 
@@ -431,7 +429,7 @@ prompt.commands = function(editor, callback) {
 };
 
 prompt.modes = function(editor, callback) {
-    var modesArray = modelist.modes;
+    var modesArray = _modes;
     modesArray = modesArray.map(function(item) {
         return {value: item.caption, mode: item.name};
     });
@@ -468,7 +466,7 @@ prompt.modes = function(editor, callback) {
     });
 };
 
-dom.importCssString(`.ace_prompt_container {
+importCssString(`.ace_prompt_container {
     max-width: 603px;
     width: 100%;
     margin: 20px auto;
@@ -477,6 +475,3 @@ dom.importCssString(`.ace_prompt_container {
     border-radius: 2px;
     box-shadow: 0px 2px 3px 0px #555;
 }`, "promtp.css", false);
-
-
-exports.prompt = prompt;

@@ -1,11 +1,9 @@
-"use strict";
-
-var EditSession = require("../edit_session").EditSession;
-var TextLayer = require("../layer/text").Text;
-var baseStyles = require("./static-css");
-var config = require("../config");
-var dom = require("../lib/dom");
-var escapeHTML = require("../lib/lang").escapeHTML;
+import { EditSession } from "../edit_session.js";
+import { Text as TextLayer } from "../layer/text.js";
+import baseStyles from "./static-css.js";
+import { loadModule } from "../config.js";
+import { importCssString } from "../lib/dom.js";
+import { escapeHTML } from "../lib/lang.js";
 
 class Element {
     constructor(type) {
@@ -63,13 +61,16 @@ var simpleDom = {
 };
 
 
-var SimpleTextLayer = function() {
-    this.config = {};
-    this.dom = simpleDom;
-};
+class SimpleTextLayer {
+    constructor() {
+        this.config = {};
+        this.dom = simpleDom;
+    }
+}
 SimpleTextLayer.prototype = TextLayer.prototype;
 
-var highlight = function(el, opts, callback) {
+export class highlight {
+  constructor(el, opts, callback) {
     var m = el.className.match(/lang-(\w+)/);
     var mode = opts.mode || m && ("ace/mode/" + m[1]);
     if (!mode)
@@ -97,7 +98,7 @@ var highlight = function(el, opts, callback) {
     }
     
     highlight.render(data, mode, theme, opts.firstLineNumber, !opts.showGutter, function (highlighted) {
-        dom.importCssString(highlighted.css, "ace_highlight");
+        importCssString(highlighted.css, "ace_highlight");
         el.innerHTML = highlighted.html;
         var container = el.firstChild.firstChild;
         for (var i = 0; i < nodes.length; i += 2) {
@@ -129,7 +130,7 @@ var highlight = function(el, opts, callback) {
  *  and `css`.
  * @returns {object} An object containing the properties `html` and `css`.
  */
-highlight.render = function(input, mode, theme, lineStart, disableGutter, callback) {
+static render(input, mode, theme, lineStart, disableGutter, callback) {
     var waiting = 1;
     var modeCache = EditSession.prototype.$modes;
 
@@ -137,7 +138,7 @@ highlight.render = function(input, mode, theme, lineStart, disableGutter, callba
     // then we need to lazily load them.
     if (typeof theme == "string") {
         waiting++;
-        config.loadModule(['theme', theme], function(m) {
+        loadModule(['theme', theme], function(m) {
             theme = m;
             --waiting || done();
         });
@@ -150,7 +151,7 @@ highlight.render = function(input, mode, theme, lineStart, disableGutter, callba
     }
     if (typeof mode == "string") {
         waiting++;
-        config.loadModule(['mode', mode], function(m) {
+        loadModule(['mode', mode], function(m) {
             if (!modeCache[mode] || modeOptions)
                 modeCache[mode] = new m.Mode(modeOptions);
             mode = modeCache[mode];
@@ -173,7 +174,7 @@ highlight.render = function(input, mode, theme, lineStart, disableGutter, callba
  * @param {string} r Code snippet
  * @returns {object} An object containing: html, css
  */
-highlight.renderSync = function(input, mode, theme, lineStart, disableGutter) {
+static renderSync(input, mode, theme, lineStart, disableGutter) {
     lineStart = parseInt(lineStart || 1, 10);
 
     var session = new EditSession("");
@@ -224,7 +225,7 @@ highlight.renderSync = function(input, mode, theme, lineStart, disableGutter) {
         html: outerEl.toString(),
         session: session
     };
+  }
 };
 
-module.exports = highlight;
-module.exports.highlight = highlight;
+export default highlight;

@@ -1,5 +1,3 @@
-"use strict";
-
 var ArabicAlefBetIntervalsBegine = ['\u0621', '\u0641'];
 var ArabicAlefBetIntervalsEnd = ['\u063A', '\u064a'];
 var dir = 0, hiLevel = 0;
@@ -276,23 +274,24 @@ function _isArabicDiacritics( ch ) {
 }
 
 /* Strong LTR character (0 - even), regular width */
-exports.L = L;
+export { L };
 /* Strong RTL character (1 - odd), Bidi width */
-exports.R = R;
+export { R };
 /* European digit (2 - even), regular width */
-exports.EN = EN;
-/* Neutral RTL-by-context character (3 - odd), regular width */
-exports.ON_R = 3;
+export { EN };
+export const ON_R = 3;
 /* Hindi (Arabic) digit (4 - even), Bidi width */
-exports.AN = 4;
-/* Arabic LamAlef (5 - odd), Half Bidi width */
-exports.R_H = 5;
+const _AN = 4;
+export { _AN as AN };
+export const R_H = 5;
 /* invisible EOL (6 - even), zero width */
-exports.B = 6;
+const _B = 6;
+export { _B as B };
 /* invisible RLE (7 - odd), zero width */
-exports.RLE = 7;
+const _RLE = 7;
+export { _RLE as RLE };
 
-exports.DOT = "\xB7";
+export const DOT = "\xB7";
 
 /**
  * Performs text reordering by implementing Unicode Bidi algorithm
@@ -303,7 +302,7 @@ exports.DOT = "\xB7";
  *
  * @return {Object} An object containing logicalFromVisual map and Bidi levels
  **/
-exports.doBidiReorder = function(text, textCharTypes, isRtl) {
+export function doBidiReorder(text, textCharTypes, isRtl) {
 	if (text.length < 2)
 		return {};
 		
@@ -321,21 +320,21 @@ exports.doBidiReorder = function(text, textCharTypes, isRtl) {
 
 	for (var i = 0; i < logicalFromVisual.length - 1; i++) { //fix levels to reflect character width
 		if (textCharTypes[i] === AN) {
-			levels[i] = exports.AN;
+			levels[i] = _AN;
 		} else if (levels[i] === R && ((textCharTypes[i] > AL && textCharTypes[i] < LRE) 
 			|| textCharTypes[i] === ON || textCharTypes[i] === BN)) {
-			levels[i] = exports.ON_R;
+			levels[i] = ON_R;
 		} else if ((i > 0 && chars[i - 1] === '\u0644') && /\u0622|\u0623|\u0625|\u0627/.test(chars[i])) {
-			levels[i - 1] = levels[i] = exports.R_H;
+			levels[i - 1] = levels[i] = R_H;
 			i++;
 		}
 	}
 	/* fix level to mark zero length EOL */
-	if (chars[chars.length - 1] === exports.DOT)
-		levels[chars.length - 1] = exports.B;
+	if (chars[chars.length - 1] === DOT)
+		levels[chars.length - 1] = _B;
 				
 	if (chars[0] === '\u202B')
-		levels[0] = exports.RLE;
+		levels[0] = _RLE;
 				
 	for (var i = 0; i < logicalFromVisual.length; i++) {
 		bidiLevels[i] = levels[logicalFromVisual[i]];
@@ -351,7 +350,7 @@ exports.doBidiReorder = function(text, textCharTypes, isRtl) {
  *
  * @return {Boolean} 'true' if text contains Bidi characters, otherwise 'false' 
  **/
-exports.hasBidiCharacters = function(text, textCharTypes){
+export function hasBidiCharacters(text, textCharTypes){
 	var ret = false;
 	for (var i = 0; i < text.length; i++){
 		textCharTypes[i] = _getCharacterType(text.charAt(i));
@@ -369,7 +368,7 @@ exports.hasBidiCharacters = function(text, textCharTypes){
  *
  * @return {Number} visual index (on display) corresponding to logical index
  **/	
-exports.getVisualFromLogicalIdx = function(logIdx, rowMap) {
+export function getVisualFromLogicalIdx(logIdx, rowMap) {
 	for (var i = 0; i < rowMap.logicalFromVisual.length; i++) {
 		if (rowMap.logicalFromVisual[i] == logIdx)
 			return i;

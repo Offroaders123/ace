@@ -1,13 +1,11 @@
-"use strict";
-
-var modes = [];
+export var modes = [];
 /**
  * Suggests a mode based on the file extension present in the given path
  * @param {string} path The path to the file
  * @returns {object} Returns an object containing information about the
  *  suggested mode.
  */
-function getModeForPath(path) {
+export function getModeForPath(path) {
     var mode = modesByName.text;
     var fileName = path.split(/[\/\\]/).pop();
     for (var i = 0; i < modes.length; i++) {
@@ -245,7 +243,7 @@ var nameOverrides = {
     AutoHotKey: "AutoHotkey / AutoIt"
 };
 
-var modesByName = {};
+export var modesByName = {};
 for (var name in supportedModes) {
     var data = supportedModes[name];
     var displayName = (nameOverrides[name] || name).replace(/_/g, " ");
@@ -254,9 +252,3 @@ for (var name in supportedModes) {
     modesByName[filename] = mode;
     modes.push(mode);
 }
-
-module.exports = {
-    getModeForPath: getModeForPath,
-    modes: modes,
-    modesByName: modesByName
-};

@@ -1,6 +1,4 @@
-"use strict";
-
-class ElasticTabstopsLite {
+export class ElasticTabstopsLite {
     constructor(editor) {
         this.$editor = editor;
         var self = this;
@@ -263,9 +261,7 @@ class ElasticTabstopsLite {
 
 }
 
-exports.ElasticTabstopsLite = ElasticTabstopsLite;
-
-var Editor = require("../editor").Editor;
+import { Editor } from "../editor.js";
 require("../config").defineOptions(Editor.prototype, "editor", {
     useElasticTabstops: {
         set: function(val) {

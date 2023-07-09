@@ -1,11 +1,9 @@
-"use strict";
-
-var dom = require("./lib/dom");
-var Range = require("./range").Range;
+import { createElement, addCssClass } from "./lib/dom.js";
+import { Range } from "./range.js";
 
 var CLASSNAME = "ace_tooltip";
 
-class Tooltip {
+export class Tooltip {
     /**
      * @param {Element} parentNode
      **/
@@ -16,7 +14,7 @@ class Tooltip {
     }
     
     $init() {
-        this.$element = dom.createElement("div");
+        this.$element = createElement("div");
         this.$element.className = CLASSNAME;
         this.$element.style.display = "none";
         this.$parentNode.appendChild(this.$element);
@@ -57,7 +55,7 @@ class Tooltip {
      * @param {String} className
      **/
     setClassName(className) {
-        dom.addCssClass(this.getElement(), className);
+        addCssClass(this.getElement(), className);
     }
 
     setTheme(theme) {
@@ -160,13 +158,11 @@ class PopupManager {
     }
 }
 
-var popupManager = new PopupManager();
-exports.popupManager = popupManager;
-
-exports.Tooltip = Tooltip;
+const popupManager = new PopupManager();
+export { popupManager };
 
 
-class HoverTooltip extends Tooltip {
+export class HoverTooltip extends Tooltip {
     constructor(parentNode=document.body) {
         super(parentNode);
         
@@ -365,5 +361,3 @@ class HoverTooltip extends Tooltip {
         if (!e.relatedTarget.classList.contains("ace_content")) this.hide();
     }
 }
-
-exports.HoverTooltip = HoverTooltip;

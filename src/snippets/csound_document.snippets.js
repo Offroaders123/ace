@@ -1,4 +1,4 @@
-module.exports = `# <CsoundSynthesizer>
+export default `# <CsoundSynthesizer>
 snippet synth
 	<CsoundSynthesizer>
 	<CsInstruments>

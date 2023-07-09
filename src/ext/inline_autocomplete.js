@@ -1,19 +1,17 @@
-"use strict";
+import { HashHandler } from "../keyboard/hash_handler.js";
+import { AceInline } from "../autocomplete/inline.js";
+import { FilteredList } from "../autocomplete.js";
+import { CompletionProvider } from "../autocomplete.js";
+import { Editor } from "../editor.js";
+import { getCompletionPrefix } from "../autocomplete/util.js";
+import { importCssString } from "../lib/dom.js";
+import { delayedCall } from "../lib/lang.js";
+import { CommandBarTooltip } from "./command_bar.js";
+import { BUTTON_CLASS_NAME } from "./command_bar.js";
 
-var HashHandler = require("../keyboard/hash_handler").HashHandler;
-var AceInline = require("../autocomplete/inline").AceInline;
-var FilteredList = require("../autocomplete").FilteredList;
-var CompletionProvider = require("../autocomplete").CompletionProvider;
-var Editor = require("../editor").Editor;
-var util = require("../autocomplete/util");
-var dom = require("../lib/dom");
-var lang = require("../lib/lang");
-var CommandBarTooltip = require("./command_bar").CommandBarTooltip;
-var BUTTON_CLASS_NAME = require("./command_bar").BUTTON_CLASS_NAME;
-
-var snippetCompleter = require("./language_tools").snippetCompleter;
-var textCompleter = require("./language_tools").textCompleter;
-var keyWordCompleter = require("./language_tools").keyWordCompleter;
+import { snippetCompleter } from "./language_tools.js";
+import { textCompleter } from "./language_tools.js";
+import { keyWordCompleter } from "./language_tools.js";
 
 var destroyCompleter = function(e, editor) {
     editor.completer && editor.completer.destroy();
@@ -24,7 +22,113 @@ var destroyCompleter = function(e, editor) {
  * This is more lightweight than the popup-based autocompletion, as it can only work with exact prefix matches.
  * There is an inline ghost text renderer and an optional command bar tooltip inside.
  */
-class InlineAutocomplete {
+export class InlineAutocomplete {
+    static for(editor) {
+        if (editor.completer instanceof InlineAutocomplete) {
+            return editor.completer;
+        }
+        if (editor.completer) {
+            editor.completer.destroy();
+            editor.completer = null;
+        }
+    
+        editor.completer = new InlineAutocomplete(editor);
+        editor.once("destroy", destroyCompleter);
+        return editor.completer;
+    };
+    
+    static startCommand = {
+        name: "startInlineAutocomplete",
+        exec: function(editor, options) {
+            var completer = InlineAutocomplete.for(editor);
+            completer.show(options);
+        },
+        bindKey: { win: "Alt-C", mac: "Option-C" }
+    };
+
+    commands = {
+        "Previous": {
+            bindKey: "Alt-[",
+            name: "Previous",
+            exec: function(editor) {
+                editor.completer.goTo("prev");
+            }
+        },
+        "Next": {
+            bindKey: "Alt-]",
+            name: "Next",
+            exec: function(editor) {
+                editor.completer.goTo("next");
+            }
+        },
+        "Accept": {
+            bindKey: { win: "Tab|Ctrl-Right", mac: "Tab|Cmd-Right" },
+            name: "Accept",
+            exec: function(editor) {
+                return editor.completer.insertMatch();
+            }
+        },
+        "Close": {
+            bindKey: "Esc",
+            name: "Close",
+            exec: function(editor) {
+                editor.completer.detach();
+            }
+        }
+    };
+    
+    /**
+     * Factory method to create a command bar tooltip for inline autocomplete.
+     * 
+     * @param {HTMLElement} parentEl  The parent element where the tooltip HTML elements will be added.
+     * @returns {CommandBarTooltip}   The command bar tooltip for inline autocomplete
+     */
+    static createInlineTooltip(parentEl) {
+        var inlineTooltip = new CommandBarTooltip(parentEl);
+        inlineTooltip.registerCommand("Previous", 
+            Object.assign({}, InlineAutocomplete.prototype.commands["Previous"], {
+                enabled: true,
+                type: "button",
+                iconCssClass: "ace_arrow_rotated"
+            })
+        );
+        inlineTooltip.registerCommand("Position", {
+            enabled: false,
+            getValue: function(editor) {
+                return editor ? [editor.completer.getIndex() + 1, editor.completer.getLength()].join("/") : "";
+            },
+            type: "text",
+            cssClass: "completion_position"
+        });
+        inlineTooltip.registerCommand("Next", 
+            Object.assign({}, InlineAutocomplete.prototype.commands["Next"], {
+                enabled: true,
+                type: "button",
+                iconCssClass: "ace_arrow"
+            })
+        );
+        inlineTooltip.registerCommand("Accept", 
+            Object.assign({}, InlineAutocomplete.prototype.commands["Accept"], {
+                enabled: function(editor) {
+                    return !!editor && editor.completer.getIndex() >= 0;
+                },
+                type: "button"
+            })
+        );
+        inlineTooltip.registerCommand("ShowTooltip", {
+            name: "Always Show Tooltip",
+            exec: function() {
+                inlineTooltip.setAlwaysShow(!inlineTooltip.getAlwaysShow());
+            },
+            enabled: true,
+            getValue: function() {
+                return inlineTooltip.getAlwaysShow();
+            },
+            type: "checkbox"
+        });
+        return inlineTooltip;
+    };
+
     constructor(editor) {
         this.editor = editor;
         this.keyboardHandler = new HashHandler(this.commands);
@@ -34,7 +138,7 @@ class InlineAutocomplete {
         this.changeListener = this.changeListener.bind(this);
 
 
-        this.changeTimer = lang.delayedCall(function() {
+        this.changeTimer = delayedCall(function() {
             this.updateCompletions();
         }.bind(this));
     }
@@ -212,7 +316,7 @@ class InlineAutocomplete {
 
         var session = this.editor.getSession();
         var pos = this.editor.getCursorPosition();
-        var prefix = util.getCompletionPrefix(this.editor);
+        var prefix = getCompletionPrefix(this.editor);
         this.base = session.doc.createAnchor(pos.row, pos.column - prefix.length);
         this.base.$insertRight = true;
         var options = {
@@ -221,7 +325,7 @@ class InlineAutocomplete {
         };
         this.getCompletionProvider().provideCompletions(this.editor, options, function(err, completions, finished) {
             var filtered = completions.filtered;
-            var prefix = util.getCompletionPrefix(this.editor);
+            var prefix = getCompletionPrefix(this.editor);
 
             if (finished) {
                 // No results
@@ -279,61 +383,6 @@ class InlineAutocomplete {
 
 }
 
-InlineAutocomplete.prototype.commands = {
-    "Previous": {
-        bindKey: "Alt-[",
-        name: "Previous",
-        exec: function(editor) {
-            editor.completer.goTo("prev");
-        }
-    },
-    "Next": {
-        bindKey: "Alt-]",
-        name: "Next",
-        exec: function(editor) {
-            editor.completer.goTo("next");
-        }
-    },
-    "Accept": {
-        bindKey: { win: "Tab|Ctrl-Right", mac: "Tab|Cmd-Right" },
-        name: "Accept",
-        exec: function(editor) {
-            return editor.completer.insertMatch();
-        }
-    },
-    "Close": {
-        bindKey: "Esc",
-        name: "Close",
-        exec: function(editor) {
-            editor.completer.detach();
-        }
-    }
-};
-
-InlineAutocomplete.for = function(editor) {
-    if (editor.completer instanceof InlineAutocomplete) {
-        return editor.completer;
-    }
-    if (editor.completer) {
-        editor.completer.destroy();
-        editor.completer = null;
-    }
-
-    editor.completer = new InlineAutocomplete(editor);
-    editor.once("destroy", destroyCompleter);
-    return editor.completer;
-};
-
-InlineAutocomplete.startCommand = {
-    name: "startInlineAutocomplete",
-    exec: function(editor, options) {
-        var completer = InlineAutocomplete.for(editor);
-        completer.show(options);
-    },
-    bindKey: { win: "Alt-C", mac: "Option-C" }
-};
-
-
 var completers = [snippetCompleter, textCompleter, keyWordCompleter];
 
 require("../config").defineOptions(Editor.prototype, "editor", {
@@ -351,59 +400,7 @@ require("../config").defineOptions(Editor.prototype, "editor", {
     }
 });
 
-/**
- * Factory method to create a command bar tooltip for inline autocomplete.
- * 
- * @param {HTMLElement} parentEl  The parent element where the tooltip HTML elements will be added.
- * @returns {CommandBarTooltip}   The command bar tooltip for inline autocomplete
- */
-InlineAutocomplete.createInlineTooltip = function(parentEl) {
-    var inlineTooltip = new CommandBarTooltip(parentEl);
-    inlineTooltip.registerCommand("Previous", 
-        Object.assign({}, InlineAutocomplete.prototype.commands["Previous"], {
-            enabled: true,
-            type: "button",
-            iconCssClass: "ace_arrow_rotated"
-        })
-    );
-    inlineTooltip.registerCommand("Position", {
-        enabled: false,
-        getValue: function(editor) {
-            return editor ? [editor.completer.getIndex() + 1, editor.completer.getLength()].join("/") : "";
-        },
-        type: "text",
-        cssClass: "completion_position"
-    });
-    inlineTooltip.registerCommand("Next", 
-        Object.assign({}, InlineAutocomplete.prototype.commands["Next"], {
-            enabled: true,
-            type: "button",
-            iconCssClass: "ace_arrow"
-        })
-    );
-    inlineTooltip.registerCommand("Accept", 
-        Object.assign({}, InlineAutocomplete.prototype.commands["Accept"], {
-            enabled: function(editor) {
-                return !!editor && editor.completer.getIndex() >= 0;
-            },
-            type: "button"
-        })
-    );
-    inlineTooltip.registerCommand("ShowTooltip", {
-        name: "Always Show Tooltip",
-        exec: function() {
-            inlineTooltip.setAlwaysShow(!inlineTooltip.getAlwaysShow());
-        },
-        enabled: true,
-        getValue: function() {
-            return inlineTooltip.getAlwaysShow();
-        },
-        type: "checkbox"
-    });
-    return inlineTooltip;
-};
-
-dom.importCssString(`
+importCssString(`
 
 .ace_icon_svg.ace_arrow,
 .ace_icon_svg.ace_arrow_rotated {
@@ -418,5 +415,3 @@ div.${BUTTON_CLASS_NAME}.completion_position {
     padding: 0;
 }
 `, "inlineautocomplete.css", false);
-
-exports.InlineAutocomplete = InlineAutocomplete;

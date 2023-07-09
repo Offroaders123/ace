@@ -1,9 +1,7 @@
-"use strict";
-
-var oop = require("./lib/oop");
-var dom = require("./lib/dom");
-var event = require("./lib/event");
-var EventEmitter = require("./lib/event_emitter").EventEmitter;
+import { implement } from "./lib/oop.js";
+import { createElement, scrollbarWidth } from "./lib/dom.js";
+import { addListener, preventDefault } from "./lib/event.js";
+import { EventEmitter } from "./lib/event_emitter.js";
 // on ie maximal element height is smaller than what we get from 4-5K line document
 // so scrollbar doesn't work, as a workaround we do not set height higher than MAX_SCROLL_H
 // and rescale scrolltop
@@ -19,10 +17,10 @@ class Scrollbar {
      * @param {string} classSuffix
      **/
     constructor(parent, classSuffix) {
-        this.element = dom.createElement("div");
+        this.element = createElement("div");
         this.element.className = "ace_scrollbar ace_scrollbar" + classSuffix;
 
-        this.inner = dom.createElement("div");
+        this.inner = createElement("div");
         this.inner.className = "ace_scrollbar-inner";
         // on safari scrollbar is not shown for empty elements
         this.inner.textContent = "\xa0";
@@ -33,8 +31,8 @@ class Scrollbar {
         this.setVisible(false);
         this.skipEvent = false;
 
-        event.addListener(this.element, "scroll", this.onScroll.bind(this));
-        event.addListener(this.element, "mousedown", event.preventDefault);
+        addListener(this.element, "scroll", this.onScroll.bind(this));
+        addListener(this.element, "mousedown", preventDefault);
     }
     
     setVisible(isVisible) {
@@ -43,12 +41,12 @@ class Scrollbar {
         this.coeff = 1;
     }
 }
-oop.implement(Scrollbar.prototype, EventEmitter);
+implement(Scrollbar.prototype, EventEmitter);
 
 /**
  * Represents a vertical scroll bar.
  **/
-class VScrollBar extends Scrollbar {
+export class VScrollBar extends Scrollbar {
     /**
      * Creates a new `VScrollBar`. `parent` is the owner of the scroll bar.
      * @param {Element} parent A DOM element
@@ -65,7 +63,7 @@ class VScrollBar extends Scrollbar {
         // in Firefox 6+ scrollbar is hidden if element has the same width as scrollbar
         // make element a little bit wider to retain scrollbar when page is zoomed 
         renderer.$scrollbarWidth =
-            this.width = dom.scrollbarWidth(parent.ownerDocument);
+            this.width = scrollbarWidth(parent.ownerDocument);
         this.inner.style.width =
             this.element.style.width = (this.width || 15) + 5 + "px";
         this.$minWidth = 0;
@@ -147,7 +145,7 @@ VScrollBar.prototype.setInnerHeight = VScrollBar.prototype.setScrollHeight;
 /**
  * Represents a horisontal scroll bar.
  **/
-class HScrollBar extends Scrollbar {
+export class HScrollBar extends Scrollbar {
     /**
      * Creates a new `HScrollBar`. `parent` is the owner of the scroll bar.
      * @param {Element} parent A DOM element
@@ -228,10 +226,9 @@ class HScrollBar extends Scrollbar {
 
 }
 
-
-exports.ScrollBar = VScrollBar; // backward compatibility
-exports.ScrollBarV = VScrollBar; // backward compatibility
-exports.ScrollBarH = HScrollBar; // backward compatibility
-
-exports.VScrollBar = VScrollBar;
-exports.HScrollBar = HScrollBar;
+// backward compatibility
+export {
+    VScrollBar as ScrollBar,
+    VScrollBar as ScrollBarV,
+    HScrollBar as ScrollBarH
+};

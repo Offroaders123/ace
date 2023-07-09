@@ -1,9 +1,9 @@
 "use strict";
 
-var keys = require('../lib/keys');
-var GutterTooltip = require("../mouse/default_gutter_handler").GutterTooltip;
+import keys, { keyCodeToString } from '../lib/keys.js';
+import { GutterTooltip } from "../mouse/default_gutter_handler.js";
 
-class GutterKeyboardHandler {
+export class GutterKeyboardHandler {
     constructor(editor) {
         this.editor = editor;
         this.gutterLayer = editor.renderer.$gutterLayer;
@@ -433,12 +433,10 @@ class GutterKeyboardHandler {
     }
 }
 
-exports.GutterKeyboardHandler = GutterKeyboardHandler;
-
 /*
  * Custom Ace gutter keyboard event
  */
-class GutterKeyboardEvent {
+export class GutterKeyboardEvent {
     constructor(domEvent, gutterKeyboardHandler) {
         this.gutterKeyboardHandler = gutterKeyboardHandler;
         this.domEvent = domEvent;
@@ -450,7 +448,7 @@ class GutterKeyboardEvent {
      * @return {string} the key that was pressed.
      */
     getKey() {
-        return keys.keyCodeToString(this.domEvent.keyCode);
+        return keyCodeToString(this.domEvent.keyCode);
     }
 
     /**
@@ -480,5 +478,3 @@ class GutterKeyboardEvent {
         return this.gutterKeyboardHandler.activeLane === "fold";
     }
 }
-
-exports.GutterKeyboardEvent = GutterKeyboardEvent;

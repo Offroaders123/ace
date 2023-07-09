@@ -1,22 +1,20 @@
-"use strict";
+import "./menu_tools/overlay_page.js";
 
-require("./menu_tools/overlay_page");
+import { buildDom as _buildDom } from "../lib/dom.js";
+import { mixin, implement } from "../lib/oop.js";
+import { version } from "../config.js";
+import { EventEmitter } from "../lib/event_emitter.js";
+var buildDom = _buildDom;
 
-var dom = require("../lib/dom");
-var oop = require("../lib/oop");
-var config = require("../config");
-var EventEmitter = require("../lib/event_emitter").EventEmitter;
-var buildDom = dom.buildDom;
-
-var modelist = require("./modelist");
-var themelist = require("./themelist");
+import { modes as _modes } from "./modelist.js";
+import { themes as _themes } from "./themelist.js";
 
 var themes = { Bright: [], Dark: [] };
-themelist.themes.forEach(function(x) {
+_themes.forEach(function(x) {
     themes[x.isDark ? "Dark" : "Bright"].push({ caption: x.caption, value: x.theme });
 });
 
-var modes = modelist.modes.map(function(x){ 
+var modes = _modes.map(function(x){ 
     return { caption: x.caption, value: x.mode }; 
 });
 
@@ -211,7 +209,7 @@ var optionGroups = {
     }
 };
 
-class OptionPanel {
+export class OptionPanel {
     constructor(editor, element) {
         this.editor = editor;
         this.container = element || document.createElement("div");
@@ -221,9 +219,9 @@ class OptionPanel {
     
     add(config) {
         if (config.Main)
-            oop.mixin(optionGroups.Main, config.Main);
+            mixin(optionGroups.Main, config.Main);
         if (config.More)
-            oop.mixin(optionGroups.More, config.More);
+            mixin(optionGroups.More, config.More);
     }
     
     render() {
@@ -235,7 +233,7 @@ class OptionPanel {
                     this.renderOptionGroup(optionGroups.More)
                 ]
             ]],
-            ["tr", null, ["td", {colspan: 2}, "version " + config.version]]
+            ["tr", null, ["td", {colspan: 2}, "version " + version]]
         ], this.container);
     }
     
@@ -375,6 +373,4 @@ class OptionPanel {
         return this.editor.getOption(option.path);
     }
 }
-oop.implement(OptionPanel.prototype, EventEmitter);
-
-exports.OptionPanel = OptionPanel;
+implement(OptionPanel.prototype, EventEmitter);

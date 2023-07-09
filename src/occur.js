@@ -1,9 +1,7 @@
-"use strict";
-
-var oop = require("./lib/oop");
-var Search = require("./search").Search;
-var EditSession = require("./edit_session").EditSession;
-var SearchHighlight = require("./search_highlight").SearchHighlight;
+import { mixin } from "./lib/oop.js";
+import { Search } from "./search.js";
+import { EditSession } from "./edit_session.js";
+import { SearchHighlight } from "./search_highlight.js";
 
 /**
  * @class Occur
@@ -13,7 +11,7 @@ var SearchHighlight = require("./search_highlight").SearchHighlight;
  * track of the mapping between the occur doc and the original doc.
  *
  **/
-class Occur extends Search {
+export class Occur extends Search {
 
     /**
      * Enables occur mode. expects that `options.needle` is a search term.
@@ -114,7 +112,7 @@ class Occur extends Search {
     }
 
     matchingLines(session, options) {
-        options = oop.mixin({}, options);
+        options = mixin({}, options);
         if (!session || !options.needle) return [];
         var search = new Search();
         search.set(options);
@@ -129,8 +127,8 @@ class Occur extends Search {
 
 }
 
-var dom = require('./lib/dom');
-dom.importCssString(".ace_occur-highlight {\n\
+import { importCssString } from './lib/dom.js';
+importCssString(".ace_occur-highlight {\n\
     border-radius: 4px;\n\
     background-color: rgba(87, 255, 8, 0.25);\n\
     position: absolute;\n\
@@ -142,5 +140,3 @@ dom.importCssString(".ace_occur-highlight {\n\
     background-color: rgb(80, 140, 85);\n\
     box-shadow: 0 0 4px rgb(60, 120, 70);\n\
 }\n", "incremental-occur-highlighting", false);
-
-exports.Occur = Occur;

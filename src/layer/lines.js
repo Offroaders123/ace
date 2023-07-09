@@ -1,8 +1,6 @@
-"use strict";
+import { translate, createFragment, createElement } from "../lib/dom.js";
 
-var dom = require("../lib/dom");
-
-class Lines {
+export class Lines {
     constructor(element, canvasHeight) {
         this.element = element;
         this.canvasHeight = canvasHeight || 500000;
@@ -14,7 +12,7 @@ class Lines {
     }
     
     moveContainer(config) {
-        dom.translate(this.element, 0, -((config.firstRowScreen * config.lineHeight) % this.canvasHeight) - config.offset * this.$offsetCoefficient);
+        translate(this.element, 0, -((config.firstRowScreen * config.lineHeight) % this.canvasHeight) - config.offset * this.$offsetCoefficient);
     }    
     
     pageChanged(oldConfig, newConfig) {
@@ -54,7 +52,7 @@ class Lines {
     push(cell) {
         if (Array.isArray(cell)) {
             this.cells.push.apply(this.cells, cell);
-            var fragment = dom.createFragment(this.element);
+            var fragment = createFragment(this.element);
             for (var i=0; i<cell.length; i++) {
                 fragment.appendChild(cell[i].element);
             }
@@ -68,7 +66,7 @@ class Lines {
     unshift(cell) {
         if (Array.isArray(cell)) {
             this.cells.unshift.apply(this.cells, cell);
-            var fragment = dom.createFragment(this.element);
+            var fragment = createFragment(this.element);
             for (var i=0; i<cell.length; i++) {
                 fragment.appendChild(cell[i].element);
             }
@@ -100,7 +98,7 @@ class Lines {
     createCell(row, config, session, initElement) {
         var cell = this.cellCache.pop();
         if (!cell) {
-            var element = dom.createElement("div");
+            var element = createElement("div");
             if (initElement)
                 initElement(element);
             
@@ -118,5 +116,3 @@ class Lines {
     }
     
 }
-
-exports.Lines = Lines;

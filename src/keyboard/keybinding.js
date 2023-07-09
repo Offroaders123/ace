@@ -1,10 +1,8 @@
-"use strict";
-
-var keyUtil  = require("../lib/keys");
-var event = require("../lib/event");
+import { keyCodeToString } from "../lib/keys.js";
+import { stopEvent } from "../lib/event.js";
 
 
-class KeyBinding {
+export class KeyBinding {
     constructor(editor) {
         this.$editor = editor;
         this.$data = {editor: editor};
@@ -90,7 +88,7 @@ class KeyBinding {
             if (success && e && hashId != -1 && 
                 toExecute.passEvent != true && toExecute.command.passEvent != true
             ) {
-                event.stopEvent(e);
+                stopEvent(e);
             }
             if (success)
                 break;
@@ -108,7 +106,7 @@ class KeyBinding {
     }
 
     onCommandKey(e, hashId, keyCode) {
-        var keyString = keyUtil.keyCodeToString(keyCode);
+        var keyString = keyCodeToString(keyCode);
         return this.$callKeyboardHandlers(hashId, keyString, keyCode, e);
     }
 
@@ -117,5 +115,3 @@ class KeyBinding {
     }
 
 }
-
-exports.KeyBinding = KeyBinding;

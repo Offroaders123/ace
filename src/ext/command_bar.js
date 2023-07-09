@@ -1,15 +1,15 @@
-var Tooltip = require("../tooltip").Tooltip;
-var EventEmitter = require("../lib/event_emitter").EventEmitter;
-var lang = require("../lib/lang");
-var dom = require("../lib/dom");
-var oop = require("../lib/oop");
-var useragent = require("../lib/useragent");
+import { Tooltip } from "../tooltip.js";
+import { EventEmitter } from "../lib/event_emitter.js";
+import { delayedCall } from "../lib/lang.js";
+import { buildDom, addCssClass, removeCssClass, importCssString } from "../lib/dom.js";
+import { implement } from "../lib/oop.js";
+import { isMac } from "../lib/useragent.js";
 
-var BUTTON_CLASS_NAME = 'command_bar_tooltip_button';
+export var BUTTON_CLASS_NAME = 'command_bar_tooltip_button';
 var VALUE_CLASS_NAME = 'command_bar_button_value';
 var CAPTION_CLASS_NAME = 'command_bar_button_caption';
 var KEYBINDING_CLASS_NAME = 'command_bar_keybinding';
-var TOOLTIP_CLASS_NAME = 'command_bar_tooltip';
+export var TOOLTIP_CLASS_NAME = 'command_bar_tooltip';
 var MORE_OPTIONS_BUTTON_ID = 'MoreOptionsButton';
 
 var defaultDelay = 100;
@@ -46,7 +46,7 @@ var keyDisplayMap = {
  * When attached to an editor, it is either always shown or only when the active line is hovered
  * with mouse, depending on the alwaysShow property.
  */
-class CommandBarTooltip {
+export class CommandBarTooltip {
     constructor(parentNode, options) {
         options = options || {};
         this.parentNode = parentNode;
@@ -58,11 +58,11 @@ class CommandBarTooltip {
         this.elements = {};
         this.commands = {};
 
-        this.tooltipEl = dom.buildDom(['div', { class: TOOLTIP_CLASS_NAME }], this.tooltip.getElement());
-        this.moreOptionsEl = dom.buildDom(['div', { class: TOOLTIP_CLASS_NAME + " tooltip_more_options" }], this.moreOptions.getElement());
+        this.tooltipEl = buildDom(['div', { class: TOOLTIP_CLASS_NAME }], this.tooltip.getElement());
+        this.moreOptionsEl = buildDom(['div', { class: TOOLTIP_CLASS_NAME + " tooltip_more_options" }], this.moreOptions.getElement());
 
-        this.$showTooltipTimer = lang.delayedCall(this.$showTooltip.bind(this), options.showDelay || defaultDelay);
-        this.$hideTooltipTimer = lang.delayedCall(this.$hideTooltip.bind(this), options.hideDelay || defaultDelay);
+        this.$showTooltipTimer = delayedCall(this.$showTooltip.bind(this), options.showDelay || defaultDelay);
+        this.$hideTooltipTimer = delayedCall(this.$hideTooltip.bind(this), options.hideDelay || defaultDelay);
         this.$tooltipEnter = this.$tooltipEnter.bind(this);
         this.$onMouseMove = this.$onMouseMove.bind(this);
         this.$onChangeScroll = this.$onChangeScroll.bind(this);
@@ -281,7 +281,7 @@ class CommandBarTooltip {
         var bindKey = command.bindKey;
         if (bindKey) {
             if (typeof bindKey === 'object') {
-                bindKey = useragent.isMac ? bindKey.mac : bindKey.win;
+                bindKey = isMac ? bindKey.mac : bindKey.win;
             }
             bindKey = bindKey.split("|")[0];
             keyParts = bindKey.split("-");
@@ -290,7 +290,7 @@ class CommandBarTooltip {
                 if (keyDisplayMap[key]) {
                     if (typeof keyDisplayMap[key] === 'string') {
                         return keyDisplayMap[key];
-                    } else if (useragent.isMac && keyDisplayMap[key].mac) {
+                    } else if (isMac && keyDisplayMap[key].mac) {
                         return keyDisplayMap[key].mac;
                     }
                 }
@@ -326,7 +326,7 @@ class CommandBarTooltip {
             }
         }
 
-        dom.buildDom(['div', { class: [BUTTON_CLASS_NAME, command.cssClass || ""].join(" "), ref: id }, buttonNode], parentEl, this.elements);
+        buildDom(['div', { class: [BUTTON_CLASS_NAME, command.cssClass || ""].join(" "), ref: id }, buttonNode], parentEl, this.elements);
         this.commands[id] = command;
 
         var eventListener = function(e) {
@@ -488,7 +488,7 @@ class CommandBarTooltip {
             if (command.type === 'text') {
                 el.textContent = value;
             } else if (command.type === 'checkbox') {
-                var domCssFn = value ? dom.addCssClass : dom.removeCssClass;
+                var domCssFn = value ? addCssClass : removeCssClass;
                 var isOnTooltip = el.parentElement === this.tooltipEl;
                 el.ariaChecked = value;
                 if (isOnTooltip) {
@@ -501,20 +501,20 @@ class CommandBarTooltip {
         }
 
         if (commandEnabled && el.disabled) {
-            dom.removeCssClass(el, "ace_disabled");
+            removeCssClass(el, "ace_disabled");
             el.ariaDisabled = el.disabled = false;
             el.removeAttribute("disabled");
         } else if (!commandEnabled && !el.disabled) {
-            dom.addCssClass(el, "ace_disabled");
+            addCssClass(el, "ace_disabled");
             el.ariaDisabled = el.disabled = true;
             el.setAttribute("disabled", "");
         }
     }
 }
 
-oop.implement(CommandBarTooltip.prototype, EventEmitter);
+implement(CommandBarTooltip.prototype, EventEmitter);
 
-dom.importCssString(`
+importCssString(`
 .ace_tooltip.${TOOLTIP_CLASS_NAME}_wrapper {
     padding: 0;
 }
@@ -629,7 +629,3 @@ div.${BUTTON_CLASS_NAME}.ace_disabled .ace_icon_svg {
     content: '✓';
 }
 `, "commandbar.css", false);
-
-exports.CommandBarTooltip = CommandBarTooltip;
-exports.TOOLTIP_CLASS_NAME = TOOLTIP_CLASS_NAME;
-exports.BUTTON_CLASS_NAME = BUTTON_CLASS_NAME;

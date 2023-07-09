@@ -11,10 +11,9 @@
  *  ☭ Hial Atropa!! ☭
  */
 
-'use strict';
-var dom = require("../../lib/dom");
-var cssText = require("./settings_menu.css");
-dom.importCssString(cssText, "settings_menu.css", false);
+import { importCssString } from "../../lib/dom.js";
+import cssText from "./settings_menu.css.js";
+importCssString(cssText, "settings_menu.css", false);
 
 /**
  * Generates an overlay for displaying menus. The overlay is an absolutely
@@ -26,7 +25,7 @@ dom.importCssString(cssText, "settings_menu.css", false);
  *  a div.
  */
 
-module.exports.overlayPage = function overlayPage(editor, contentElement, callback) {
+export function overlayPage(editor, contentElement, callback) {
     var closer = document.createElement('div');
     var ignoreFocusOut = false;
 

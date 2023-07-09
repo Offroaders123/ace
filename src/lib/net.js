@@ -6,10 +6,9 @@
  * see: http://github.com/jrburke/requirejs for details
  */
 
-"use strict";
-var dom = require("./dom");
+import { getDocumentHead } from "./dom.js";
 
-exports.get = function (url, callback) {
+export function get (url, callback) {
     var xhr = new XMLHttpRequest();
     xhr.open('GET', url, true);
     xhr.onreadystatechange = function () {
@@ -22,8 +21,8 @@ exports.get = function (url, callback) {
     xhr.send(null);
 };
 
-exports.loadScript = function(path, callback) {
-    var head = dom.getDocumentHead();
+export function loadScript(path, callback) {
+    var head = getDocumentHead();
     var s = document.createElement('script');
 
     s.src = path;
@@ -42,7 +41,7 @@ exports.loadScript = function(path, callback) {
  * Convert a url into a fully qualified absolute URL
  * This function does not work in IE6
  */
-exports.qualifyURL = function(url) {
+export function qualifyURL(url) {
     var a = document.createElement('a');
     a.href = url;
     return a.href;
