@@ -321,6 +321,13 @@ export function blockIdle(delay) {
     }, delay || 100);
 };
 
+declare global {
+    var mozRequestAnimationFrame: typeof requestAnimationFrame;
+    var webkitRequestAnimationFrame: typeof requestAnimationFrame;
+    var msRequestAnimationFrame: typeof requestAnimationFrame;
+    var oRequestAnimationFrame: typeof requestAnimationFrame;
+}
+
 export const nextFrame = typeof window == "object" && (window.requestAnimationFrame
     || window.mozRequestAnimationFrame
     || window.webkitRequestAnimationFrame

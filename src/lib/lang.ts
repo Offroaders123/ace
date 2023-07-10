@@ -1,12 +1,12 @@
-export function last(a) {
+export function last<T extends string | any[] | readonly any[]>(a: T): T extends [...infer _,infer K] ? K : T extends readonly [...infer _,infer L] ? L : string {
     return a[a.length - 1];
 };
 
-export function stringReverse(string) {
+export function stringReverse(string: string): string {
     return string.split("").reverse().join("");
 };
 
-export function stringRepeat (string, count) {
+export function stringRepeat(string: string, count: number): string {
     var result = '';
     while (count > 0) {
         if (count & 1)
@@ -21,40 +21,41 @@ export function stringRepeat (string, count) {
 var trimBeginRegexp = /^\s\s*/;
 var trimEndRegexp = /\s\s*$/;
 
-export function stringTrimLeft (string) {
+export function stringTrimLeft(string: string): string {
     return string.replace(trimBeginRegexp, '');
 };
 
-export function stringTrimRight (string) {
+export function stringTrimRight(string: string): string {
     return string.replace(trimEndRegexp, '');
 };
 
-export function copyObject(obj) {
-    var copy = {};
+export function copyObject<T extends object>(obj: T): T {
+    var copy: T = {} as T;
     for (var key in obj) {
         copy[key] = obj[key];
     }
     return copy;
 };
 
-export function copyArray(array){
-    var copy = [];
+export function copyArray<T extends any[] | readonly any[]>(array: T): T {
+    var copy: any[] = [];
     for (var i=0, l=array.length; i<l; i++) {
         if (array[i] && typeof array[i] == "object")
-            copy[i] = this.copyObject(array[i]);
+            copy[i] = copyObject(array[i]);
         else 
             copy[i] = array[i];
     }
-    return copy;
+    return copy as T;
 };
 
-export function deepCopy(obj) {
+export function deepCopy<T>(obj: T): T {
     if (typeof obj !== "object" || !obj)
         return obj;
-    var copy;
+    var copy: T;
     if (Array.isArray(obj)) {
-        copy = [];
+        copy = [] as T;
         for (var key = 0; key < obj.length; key++) {
+            // @ts-expect-error - index access
             copy[key] = deepCopy(obj[key]);
         }
         return copy;
@@ -62,22 +63,24 @@ export function deepCopy(obj) {
     if (Object.prototype.toString.call(obj) !== "[object Object]")
         return obj;
     
-    copy = {};
-    for (var key in obj)
+    copy = {} as T;
+    for (let key in obj)
         copy[key] = deepCopy(obj[key]);
     return copy;
 };
 
-export function arrayToMap(arr) {
-    var map = {};
-    for (var i=0; i<arr.length; i++) {
+export type ArrayToMap<T extends any[] | readonly any[]> = { [K in T[number]]: 1; };
+
+export function arrayToMap<T extends any[] | readonly any[]>(arr: T): ArrayToMap<T> {
+    var map = {} as ArrayToMap<T>;
+    for (var i: T[number] = 0; i < arr.length; i++) {
         map[arr[i]] = 1;
     }
     return map;
 
 };
 
-export function createMap(props) {
+export function createMap<T extends object>(props: T): T {
     var map = Object.create(null);
     for (var i in props) {
         map[i] = props[i];
@@ -88,7 +91,7 @@ export function createMap(props) {
 /*
  * splice out of 'array' anything that === 'value'
  */
-export function arrayRemove(array, value) {
+export function arrayRemove(array: any[], value: any): void {
   for (var i = 0; i <= array.length; i++) {
     if (value === array[i]) {
       array.splice(i, 1);
@@ -96,94 +99,98 @@ export function arrayRemove(array, value) {
   }
 };
 
-export function escapeRegExp(str) {
+export function escapeRegExp(str: string): string {
     return str.replace(/([.*+?^${}()|[\]\/\\])/g, '\\$1');
 };
 
-export function escapeHTML(str) {
+export function escapeHTML(str: string): string {
     return ("" + str).replace(/&/g, "&#38;").replace(/"/g, "&#34;").replace(/'/g, "&#39;").replace(/</g, "&#60;");
 };
 
-export function getMatchOffsets(string, regExp) {
-    var matches = [];
+export interface MatchOffsets {
+    offset: number;
+    length: number;
+}
+
+export function getMatchOffsets(string: string, regExp: RegExp): MatchOffsets[] {
+    var matches: MatchOffsets[] = [];
 
     string.replace(regExp, function(str) {
         matches.push({
             offset: arguments[arguments.length-2],
             length: str.length
         });
+        return "";
     });
 
     return matches;
 };
 
-/* deprecated */
-export function deferredCall(fcn) {
-    var timer = null;
+/** @deprecated */
+export function deferredCall(fcn: () => void) {
+    var timer: number | null | undefined = null;
     var callback = function() {
         timer = null;
         fcn();
     };
 
-    var deferred = function(timeout) {
+    class deferred {
+    static schedule: typeof deferred;
+    constructor(timeout: number) {
         deferred.cancel();
         timer = setTimeout(callback, timeout || 0);
         return deferred;
-    };
-
-    deferred.schedule = deferred;
-
-    deferred.call = function() {
+    }
+    static call() {
         this.cancel();
         fcn();
         return deferred;
-    };
-
-    deferred.cancel = function() {
-        clearTimeout(timer);
+    }
+    static cancel() {
+        clearTimeout(timer!);
         timer = null;
         return deferred;
-    };
-    
-    deferred.isPending = function() {
+    }
+    static isPending() {
         return timer;
+    }
     };
+    deferred.schedule = deferred;
 
     return deferred;
 };
 
 
-export function delayedCall(fcn, defaultTimeout) {
-    var timer = null;
+export function delayedCall(fcn: () => void, defaultTimeout: number) {
+    var timer: number | null | undefined = null;
     var callback = function() {
         timer = null;
         fcn();
     };
 
-    var _self = function(timeout) {
+    class _self {
+    static schedule: typeof _self;
+    constructor(timeout: number) {
         if (timer == null)
             timer = setTimeout(callback, timeout || defaultTimeout);
-    };
-
-    _self.delay = function(timeout) {
+    }
+    static delay(timeout: number) {
         timer && clearTimeout(timer);
         timer = setTimeout(callback, timeout || defaultTimeout);
-    };
-    _self.schedule = _self;
-
-    _self.call = function() {
+    }
+    static call() {
         this.cancel();
         fcn();
-    };
-
-    _self.cancel = function() {
+    }
+    static cancel() {
         timer && clearTimeout(timer);
         timer = null;
-    };
-
-    _self.isPending = function() {
+    }
+    static isPending() {
         return timer;
+    }
     };
+    _self.schedule = _self;
 
     return _self;
 };

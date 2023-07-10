@@ -104,21 +104,24 @@ var Keys = (function() {
           186: ';', 187: '=', 188: ',', 189: '-', 190: '.', 191: '/', 192: '`',
           219: '[', 220: '\\',221: ']', 222: "'", 111: '/', 106: '*'
         }
-    };
+    } as const;
 
     // workaround for firefox bug
+    // @ts-expect-error - lack of an interface definition for these values
     ret.PRINTABLE_KEYS[173] = '-';
 
     // A reverse map of FUNCTION_KEYS
-    var name, i;
-    for (i in ret.FUNCTION_KEYS) {
-        name = ret.FUNCTION_KEYS[i].toLowerCase();
-        ret[name] = parseInt(i, 10);
+    var name: keyof typeof ret;
+    for (const i in ret.FUNCTION_KEYS) {
+        name = ret.FUNCTION_KEYS[i as keyof typeof ret.FUNCTION_KEYS].toLowerCase() as typeof name;
+        // @ts-expect-error - unexpected type mapping, also because of a lack of an interface for the reverse-map
+        ret[name] = parseInt(i.toString(), 10);
     }
 
     // A reverse map of PRINTABLE_KEYS
-    for (i in ret.PRINTABLE_KEYS) {
-        name = ret.PRINTABLE_KEYS[i].toLowerCase();
+    for (const i in ret.PRINTABLE_KEYS) {
+        name = ret.PRINTABLE_KEYS[i as unknown as keyof typeof ret.PRINTABLE_KEYS].toLowerCase() as typeof name;
+        // @ts-expect-error - type mapping
         ret[name] = parseInt(i, 10);
     }
 
@@ -152,8 +155,12 @@ mixin(_default, Keys);
 import * as _default from "./keys.js";
 export { _default as default };
 
-export function keyCodeToString(keyCode) {
+const { MODIFIER_KEYS, KEY_MODS, FUNCTION_KEYS, PRINTABLE_KEYS } = Keys;
+export { MODIFIER_KEYS, KEY_MODS, FUNCTION_KEYS, PRINTABLE_KEYS };
+
+export function keyCodeToString(keyCode: number): string {
     // Language-switching keystroke in Chrome/Linux emits keyCode 0.
+    // @ts-expect-error
     var keyString = Keys[keyCode];
     if (typeof keyString != "string")
         keyString = String.fromCharCode(keyCode);

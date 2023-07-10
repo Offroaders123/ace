@@ -9,12 +9,14 @@ export const OS = {
     LINUX: "LINUX",
     MAC: "MAC",
     WINDOWS: "WINDOWS"
-};
+} as const;
+
+export type OS = typeof OS[keyof typeof OS];
 
 /*
  * Return an exports.OS constant
  */
-export const getOS = function() {
+export function getOS(): OS {
     if (isMac) {
         return OS.MAC;
     } else if (isLinux) {
@@ -25,7 +27,7 @@ export const getOS = function() {
 };
 
 // this can be called in non browser environments (e.g. from ace/requirejs/text)
-var _navigator = typeof navigator == "object" ? navigator : /** @type { Navigator } */ ({});
+var _navigator = typeof navigator == "object" ? navigator : {} as Navigator;
 
 var os = (/mac|win|linux/i.exec(_navigator.platform) || ["other"])[0].toLowerCase();
 var ua = _navigator.userAgent || "";
@@ -52,6 +54,10 @@ export const isOldIE = isIE && isIE < 9;
 export const isGecko = ua.match(/ Gecko\/\d+/);
 export const isMozilla = isGecko;
 
+declare global {
+    var opera: {};
+}
+
 // Is this Opera 
 export const isOpera = typeof opera == "object" && Object.prototype.toString.call(window.opera) == "[object Opera]";
 
@@ -67,6 +73,10 @@ export const isAIR = ua.indexOf("AdobeAIR") >= 0;
 export const isAndroid = ua.indexOf("Android") >= 0;
 
 export const isChromeOS = ua.indexOf(" CrOS ") >= 0;
+
+declare global {
+    var MSStream: {};
+}
 
 export const isIOS = /iPad|iPhone|iPod/.test(ua) && !window.MSStream;
 
