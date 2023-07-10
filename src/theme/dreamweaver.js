@@ -1,6 +1,8 @@
-exports.isDark = false;
-exports.cssClass = "ace-dreamweaver";
-exports.cssText = require("./dreamweaver-css");
+export const isDark = false;
+export const cssClass = "ace-dreamweaver";
+import cssText from "./dreamweaver-css.js";
 
-var dom = require("../lib/dom");
-dom.importCssString(exports.cssText, exports.cssClass, false);
+export { cssText };
+
+import { importCssString } from "../lib/dom.js";
+importCssString(cssText, cssClass, false);

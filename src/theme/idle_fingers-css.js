@@ -1,4 +1,4 @@
-module.exports = `.ace-idle-fingers .ace_gutter {
+export default `.ace-idle-fingers .ace_gutter {
   background: #3b3b3b;
   color: rgb(153,153,153)
 }

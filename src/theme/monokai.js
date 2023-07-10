@@ -1,6 +1,8 @@
-exports.isDark = true;
-exports.cssClass = "ace-monokai";
-exports.cssText = require("./monokai-css");
+export const isDark = true;
+export const cssClass = "ace-monokai";
+import cssText from "./monokai-css.js";
 
-var dom = require("../lib/dom");
-dom.importCssString(exports.cssText, exports.cssClass, false);
+export { cssText };
+
+import { importCssString } from "../lib/dom.js";
+importCssString(cssText, cssClass, false);

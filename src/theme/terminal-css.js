@@ -1,4 +1,4 @@
-module.exports = `.ace-terminal-theme .ace_gutter {
+export default `.ace-terminal-theme .ace_gutter {
   background: #1a0005;
   color: steelblue
 }

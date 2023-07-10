@@ -1,6 +1,8 @@
-exports.isDark = true;
-exports.cssClass = "ace-gob";
-exports.cssText = require("./gob-css");
+export const isDark = true;
+export const cssClass = "ace-gob";
+import cssText from "./gob-css.js";
 
-var dom = require("../lib/dom");
-dom.importCssString(exports.cssText, exports.cssClass, false);
+export { cssText };
+
+import { importCssString } from "../lib/dom.js";
+importCssString(cssText, cssClass, false);

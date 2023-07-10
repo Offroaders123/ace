@@ -1,6 +1,8 @@
-exports.isDark = true;
-exports.cssClass = "ace-pastel-on-dark";
-exports.cssText = require("./pastel_on_dark-css");
+export const isDark = true;
+export const cssClass = "ace-pastel-on-dark";
+import cssText from "./pastel_on_dark-css.js";
 
-var dom = require("../lib/dom");
-dom.importCssString(exports.cssText, exports.cssClass, false);
+export { cssText };
+
+import { importCssString } from "../lib/dom.js";
+importCssString(cssText, cssClass, false);

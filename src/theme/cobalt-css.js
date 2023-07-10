@@ -1,4 +1,4 @@
-module.exports = `.ace-cobalt .ace_gutter {
+export default `.ace-cobalt .ace_gutter {
   background: #011e3a;
   color: rgb(128,145,160)
 }

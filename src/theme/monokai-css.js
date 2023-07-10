@@ -1,4 +1,4 @@
-module.exports = `.ace-monokai .ace_gutter {
+export default `.ace-monokai .ace_gutter {
   background: #2F3129;
   color: #8F908A
 }

@@ -1,7 +1,8 @@
-exports.isDark = false;
-exports.cssText = require("./crimson_editor-css");
+export const isDark = false;
+import cssText from "./crimson_editor-css.js";
+export { cssText };
 
-exports.cssClass = "ace-crimson-editor";
+export const cssClass = "ace-crimson-editor";
 
-var dom = require("../lib/dom");
-dom.importCssString(exports.cssText, exports.cssClass, false);
+import { importCssString } from "../lib/dom.js";
+importCssString(cssText, cssClass, false);

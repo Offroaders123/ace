@@ -1,4 +1,4 @@
-module.exports = `.ace-merbivore .ace_gutter {
+export default `.ace-merbivore .ace_gutter {
   background: #202020;
   color: #E6E1DC
 }

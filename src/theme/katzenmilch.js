@@ -1,6 +1,8 @@
-exports.isDark = false;
-exports.cssClass = "ace-katzenmilch";
-exports.cssText = require("./katzenmilch-css");
+export const isDark = false;
+export const cssClass = "ace-katzenmilch";
+import cssText from "./katzenmilch-css.js";
 
-var dom = require("../lib/dom");
-dom.importCssString(exports.cssText, exports.cssClass, false);
+export { cssText };
+
+import { importCssString } from "../lib/dom.js";
+importCssString(cssText, cssClass, false);

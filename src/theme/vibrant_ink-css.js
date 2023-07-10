@@ -1,4 +1,4 @@
-module.exports = `.ace-vibrant-ink .ace_gutter {
+export default `.ace-vibrant-ink .ace_gutter {
   background: #1a1a1a;
   color: #BEBEBE
 }

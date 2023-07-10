@@ -1,6 +1,8 @@
-exports.isDark = true;
-exports.cssClass = "ace-tomorrow-night-blue";
-exports.cssText = require("./tomorrow_night_blue-css");
+export const isDark = true;
+export const cssClass = "ace-tomorrow-night-blue";
+import cssText from "./tomorrow_night_blue-css.js";
 
-var dom = require("../lib/dom");
-dom.importCssString(exports.cssText, exports.cssClass, false);
+export { cssText };
+
+import { importCssString } from "../lib/dom.js";
+importCssString(cssText, cssClass, false);

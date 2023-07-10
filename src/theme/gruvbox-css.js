@@ -1,4 +1,4 @@
-module.exports = `.ace-gruvbox .ace_gutter-active-line {
+export default `.ace-gruvbox .ace_gutter-active-line {
   background-color: #3C3836;
 }
 

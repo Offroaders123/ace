@@ -1,9 +1,10 @@
-"use strict";
 
-exports.isDark = false;
-exports.cssClass = "ace-tm";
-exports.cssText = require("./textmate-css");
-exports.$id = "ace/theme/textmate";
+export const isDark = false;
+export const cssClass = "ace-tm";
+import cssText from "./textmate-css.js";
+export const $id = "ace/theme/textmate";
 
-var dom = require("../lib/dom");
-dom.importCssString(exports.cssText, exports.cssClass, false);
+export { cssText };
+
+import { importCssString } from "../lib/dom.js";
+importCssString(cssText, cssClass, false);

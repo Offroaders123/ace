@@ -1,4 +1,4 @@
-module.exports = `.ace-solarized-light .ace_gutter {
+export default `.ace-solarized-light .ace_gutter {
   background: #fbf1d3;
   color: #333
 }

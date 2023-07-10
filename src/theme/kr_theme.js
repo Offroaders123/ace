@@ -1,6 +1,8 @@
-exports.isDark = true;
-exports.cssClass = "ace-kr-theme";
-exports.cssText = require("./kr_theme-css");
+export const isDark = true;
+export const cssClass = "ace-kr-theme";
+import cssText from "./kr_theme-css.js";
 
-var dom = require("../lib/dom");
-dom.importCssString(exports.cssText, exports.cssClass, false);
+export { cssText };
+
+import { importCssString } from "../lib/dom.js";
+importCssString(cssText, cssClass, false);

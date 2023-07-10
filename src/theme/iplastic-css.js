@@ -1,4 +1,4 @@
-module.exports = `.ace-iplastic .ace_gutter {
+export default `.ace-iplastic .ace_gutter {
   background: #dddddd;
   color: #666666
 }

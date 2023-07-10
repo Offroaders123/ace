@@ -1,4 +1,4 @@
-module.exports = `.ace-gruvbox-dark-hard .ace_gutter {
+export default `.ace-gruvbox-dark-hard .ace_gutter {
   background: #1d2021;
   color: rgb(132,126,106)
 }

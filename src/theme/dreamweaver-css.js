@@ -1,4 +1,4 @@
-module.exports = `.ace-dreamweaver .ace_gutter {
+export default `.ace-dreamweaver .ace_gutter {
   background: #e8e8e8;
   color: #333;
 }

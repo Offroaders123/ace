@@ -1,6 +1,8 @@
-exports.isDark = true;
-    exports.cssClass = "ace-one-dark";
-    exports.cssText = require("./one_dark-css");
+export const isDark = true;
+    export const cssClass = "ace-one-dark";
+    import cssText from "./one_dark-css.js";
     
-    var dom = require("../lib/dom");
-    dom.importCssString(exports.cssText, exports.cssClass, false);
+    import { importCssString } from "../lib/dom.js";
+    importCssString(cssText, cssClass, false);
+
+    export { cssText };

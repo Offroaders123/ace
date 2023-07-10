@@ -1,6 +1,8 @@
-exports.isDark = true;
-exports.cssClass = "ace-vibrant-ink";
-exports.cssText = require("./vibrant_ink-css");
+export const isDark = true;
+export const cssClass = "ace-vibrant-ink";
+import cssText from "./vibrant_ink-css.js";
 
-var dom = require("../lib/dom");
-dom.importCssString(exports.cssText, exports.cssClass, false);
+export { cssText };
+
+import { importCssString } from "../lib/dom.js";
+importCssString(cssText, cssClass, false);

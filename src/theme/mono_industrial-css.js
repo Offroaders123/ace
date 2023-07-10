@@ -1,4 +1,4 @@
-module.exports = `.ace-mono-industrial .ace_gutter {
+export default `.ace-mono-industrial .ace_gutter {
   background: #1d2521;
   color: #C5C9C9
 }

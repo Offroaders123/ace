@@ -1,4 +1,4 @@
-module.exports = `.ace-github-dark .ace_gutter {
+export default `.ace-github-dark .ace_gutter {
   background: #24292e;
   color: #7388b5
 }

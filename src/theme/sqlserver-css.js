@@ -1,4 +1,4 @@
-module.exports = `.ace-sqlserver .ace_gutter {
+export default `.ace-sqlserver .ace_gutter {
     background: #ebebeb;
     color: #333;
     overflow: hidden;

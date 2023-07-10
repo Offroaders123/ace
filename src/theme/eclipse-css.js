@@ -1,4 +1,4 @@
-module.exports = `.ace-eclipse .ace_gutter {
+export default `.ace-eclipse .ace_gutter {
   background: #ebebeb;
   border-right: 1px solid rgb(159, 159, 159);
   color: rgb(136, 136, 136);

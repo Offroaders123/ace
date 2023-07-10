@@ -1,4 +1,4 @@
-module.exports = `.ace-crimson-editor .ace_gutter {
+export default `.ace-crimson-editor .ace_gutter {
   background: #ebebeb;
   color: #333;
   overflow : hidden;

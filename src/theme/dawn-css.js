@@ -1,4 +1,4 @@
-module.exports = `.ace-dawn .ace_gutter {
+export default `.ace-dawn .ace_gutter {
   background: #ebebeb;
   color: #333
 }

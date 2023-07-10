@@ -1,6 +1,8 @@
-exports.isDark = true;
-exports.cssClass = "ace-idle-fingers";
-exports.cssText = require("./idle_fingers-css");
+export const isDark = true;
+export const cssClass = "ace-idle-fingers";
+import cssText from "./idle_fingers-css.js";
 
-var dom = require("../lib/dom");
-dom.importCssString(exports.cssText, exports.cssClass, false);
+export { cssText };
+
+import { importCssString } from "../lib/dom.js";
+importCssString(cssText, cssClass, false);

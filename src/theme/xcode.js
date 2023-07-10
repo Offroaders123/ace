@@ -1,6 +1,8 @@
-exports.isDark = false;
-exports.cssClass = "ace-xcode";
-exports.cssText = require("./xcode-css");
+export const isDark = false;
+export const cssClass = "ace-xcode";
+import cssText from "./xcode-css.js";
 
-var dom = require("../lib/dom");
-dom.importCssString(exports.cssText, exports.cssClass, false);
+export { cssText };
+
+import { importCssString } from "../lib/dom.js";
+importCssString(cssText, cssClass, false);

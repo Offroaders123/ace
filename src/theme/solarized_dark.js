@@ -1,6 +1,8 @@
-exports.isDark = true;
-exports.cssClass = "ace-solarized-dark";
-exports.cssText = require("./solarized_dark-css");
+export const isDark = true;
+export const cssClass = "ace-solarized-dark";
+import cssText from "./solarized_dark-css.js";
 
-var dom = require("../lib/dom");
-dom.importCssString(exports.cssText, exports.cssClass, false);
+export { cssText };
+
+import { importCssString } from "../lib/dom.js";
+importCssString(cssText, cssClass, false);

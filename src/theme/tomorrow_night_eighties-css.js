@@ -1,4 +1,4 @@
-module.exports = `.ace-tomorrow-night-eighties .ace_gutter {
+export default `.ace-tomorrow-night-eighties .ace_gutter {
   background: #272727;
   color: #CCC
 }

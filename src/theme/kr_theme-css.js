@@ -1,4 +1,4 @@
-module.exports = `.ace-kr-theme .ace_gutter {
+export default `.ace-kr-theme .ace_gutter {
   background: #1c1917;
   color: #FCFFE0
 }

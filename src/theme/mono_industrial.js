@@ -1,6 +1,8 @@
-exports.isDark = true;
-exports.cssClass = "ace-mono-industrial";
-exports.cssText = require("./mono_industrial-css");
+export const isDark = true;
+export const cssClass = "ace-mono-industrial";
+import cssText from "./mono_industrial-css.js";
 
-var dom = require("../lib/dom");
-dom.importCssString(exports.cssText, exports.cssClass, false);
+export { cssText };
+
+import { importCssString } from "../lib/dom.js";
+importCssString(cssText, cssClass, false);

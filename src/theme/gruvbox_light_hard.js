@@ -1,6 +1,8 @@
-exports.isDark = false;
-exports.cssClass = "ace-gruvbox-light-hard";
-exports.cssText = require("./gruvbox_light_hard-css");
+export const isDark = false;
+export const cssClass = "ace-gruvbox-light-hard";
+import cssText from "./gruvbox_light_hard-css.js";
 
-var dom = require("../lib/dom");
-dom.importCssString(exports.cssText, exports.cssClass);
+export { cssText };
+
+import { importCssString } from "../lib/dom.js";
+importCssString(cssText, cssClass);

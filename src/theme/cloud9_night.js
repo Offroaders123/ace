@@ -1,6 +1,8 @@
-exports.isDark = true;
-  exports.cssClass = "ace-cloud9-night";
-  exports.cssText = require("./cloud9_night-css");
+export const isDark = true;
+  export const cssClass = "ace-cloud9-night";
+  import cssText from "./cloud9_night-css.js";
 
-  var dom = require("../lib/dom");
-  dom.importCssString(exports.cssText, exports.cssClass);
+  export { cssText };
+
+  import { importCssString } from "../lib/dom.js";
+  importCssString(cssText, cssClass);

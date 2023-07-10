@@ -1,4 +1,4 @@
-module.exports = `/* CSS style content from github's default pygments highlighter template.
+export default `/* CSS style content from github's default pygments highlighter template.
    Cursor and selection styles from textmate.css. */
 .ace-github .ace_gutter {
   background: #e8e8e8;

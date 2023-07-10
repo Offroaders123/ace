@@ -1,9 +1,10 @@
-"use strict";
 
-exports.isDark = false;
-exports.cssText = require("./eclipse-css");
+export const isDark = false;
+import cssText from "./eclipse-css.js";
 
-exports.cssClass = "ace-eclipse";
+export const cssClass = "ace-eclipse";
 
-var dom = require("../lib/dom");
-dom.importCssString(exports.cssText, exports.cssClass, false);
+export { cssText };
+
+import { importCssString } from "../lib/dom.js";
+importCssString(cssText, cssClass, false);
